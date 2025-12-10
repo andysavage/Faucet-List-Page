@@ -31,3 +31,4 @@ You can easily host this application on your own GitHub Pages site:
 Your site will be published at `https://<your-username>.github.io/<repository-name>/`.
 https://directsponsor.github.io/Faucet-List-Page/
 
+# Auto-trigger deployment
