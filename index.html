@@ -186,6 +186,16 @@
                 width: 100%;
             }
         }
+        @media screen and (max-width: 550px) {
+            .url-column {
+                display: none;
+            }
+        }
+        @media screen and (max-width: 290px) {
+            .progressBar {
+                height: 44px;
+            }
+        }
     </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
@@ -242,7 +252,7 @@
         <thead>
             <tr>
                 <th>Name</th>
-                <th>Url</th>
+                <th class="url-column">Url</th>
                 <th>Progress</th>
                 <th>Action</th>
             </tr>
@@ -264,6 +274,7 @@
             };
 
             renderFaucets = function() {
+                const isSmallScreen = window.innerWidth <= 550;
                 let faucets = FaucetStore.getFaucets();
                 const tableBody = $('#faucet-table tbody');
                 tableBody.empty();
@@ -284,7 +295,8 @@
                 });
 
                 if (faucets.length === 0) {
-                    tableBody.append('<tr><td colspan="4">No record found</td></tr>');
+                    const colspan = isSmallScreen ? 3 : 4;
+                    tableBody.append(`<tr><td colspan="${colspan}">No record found</td></tr>`);
                     return;
                 }
 
@@ -296,20 +308,23 @@
                     const timeleft = Math.max(0, timerInSeconds - diff);
 
                     let progressCellHtml;
+                    const timerUnit = isSmallScreen ? 'm' : ' min';
+                    const readyText = isSmallScreen ? '✓' : 'Ready';
+
                     if (timeleft > 0) {
                         progressCellHtml = `
                             <div id="timeBar_all_${faucet.id}" class="progressBar">
                                 <div class="progress-bar-fill"></div>
                                 <div class="progress-bar-text">
                                     <span class="time-left">${formatTime(timeleft)}</span>
-                                    <span class="set-time">${faucet.timer} min</span>
+                                    <span class="set-time">${faucet.timer}${timerUnit}</span>
                                 </div>
                             </div>
                         `;
                     } else {
                         progressCellHtml = `
                             <div id="timeBar_all_${faucet.id}" class="progressBar">
-                                Ready (${faucet.timer} min)
+                                ${readyText} (${faucet.timer}${timerUnit})
                             </div>
                         `;
                     }
@@ -319,7 +334,7 @@
                     const row = `
                         <tr>
                             <td>${faucet.name}</td>
-                            <td class="url-cell" title="${faucet.url}">${displayUrl}</td>
+                            <td class="url-cell url-column" title="${faucet.url}">${displayUrl}</td>
                             <td>${progressCellHtml}</td>
                             <td>
                                 <button class="button-secondary delete-faucet" data-id="${faucet.id}">Delete</button>
