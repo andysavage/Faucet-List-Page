@@ -31,8 +31,9 @@ function isAdmin($userId) {
 }
 
 function requireAdmin() {
+    // Check multiple sources for user_id (JSON body, GET, POST form data)
     $input = json_decode(file_get_contents('php://input'), true);
-    $userId = $input['user_id'] ?? $_GET['user_id'] ?? null;
+    $userId = $input['user_id'] ?? $_GET['user_id'] ?? $_POST['user_id'] ?? null;
     
     if (!isAdmin($userId)) {
         http_response_code(403);

@@ -230,7 +230,7 @@
             loadAds();
         }
 
-        // Protect page
+        // Protect page - verify admin status upfront
         async function checkAdmin() {
             const session = auth.getSession();
             if (!session) {
@@ -238,8 +238,17 @@
                 return;
             }
 
-            // We'll verify server-side during data fetching
-            loadAds();
+            // Verify admin status with server before showing interface
+            try {
+                const response = await fetch(`api/get-banner-ads.php?type=banner&user_id=${session.combined_user_id}`);
+                if (response.status === 403) {
+                    document.body.innerHTML = '<div style="padding: 40px; text-align: center;"><h1>Access Denied</h1><p>Admin privileges required.</p><p><a href="/">Return to Faucet List</a></p></div>';
+                    return;
+                }
+                loadAds();
+            } catch (error) {
+                document.body.innerHTML = '<div style="padding: 40px; text-align: center;"><h1>Error</h1><p>Could not verify admin status.</p></div>';
+            }
         }
 
         async function loadAds() {
