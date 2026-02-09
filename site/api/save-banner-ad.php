@@ -43,15 +43,25 @@ if ($type === 'floating') {
     $file = $dataDir . '/ads.txt';
 }
 
-// Read existing content
+// Read existing content and parse ads
 $existingContent = file_exists($file) ? file_get_contents($file) : '';
+$ads = array_filter(array_map('trim', explode('---', $existingContent)));
 
-// Append new ad with separator
-$newContent = $existingContent;
-if (!empty($existingContent) && !preg_match('/---\s*$/', $existingContent)) {
-    $newContent .= "\n---\n";
+// Check if we're updating an existing ad (index provided) or adding new
+$editIndex = isset($input['index']) ? (int)$input['index'] : -1;
+
+if ($editIndex >= 0 && $editIndex < count($ads)) {
+    // Update existing ad
+    $ads[$editIndex] = $html;
+    $message = 'Banner ad updated successfully';
+} else {
+    // Append new ad
+    $ads[] = $html;
+    $message = 'Banner ad added successfully';
 }
-$newContent .= $html . "\n";
+
+// Rebuild file content
+$newContent = implode("\n---\n", $ads) . "\n";
 
 // Write to file
 if (file_put_contents($file, $newContent) === false) {
@@ -59,4 +69,4 @@ if (file_put_contents($file, $newContent) === false) {
     exit;
 }
 
-echo json_encode(['success' => true, 'message' => 'Banner ad added successfully']);
+echo json_encode(['success' => true, 'message' => $message]);
