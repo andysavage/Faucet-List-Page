@@ -94,7 +94,7 @@ preview_deletions() {
         --exclude='.git' \
         --exclude='node_modules' \
         --exclude='.DS_Store' \
-        --exclude='banners/*' \
+        --exclude='media/*' \
         "$LOCAL_SITE_DIR/" \
         "faucetlist@directadmin-de.kxe.io:$REMOTE_SITE_PATH/" 2>/dev/null | grep '^\*deleting' || true)
     
@@ -136,7 +136,7 @@ rsync -avz --delete -e "ssh -i ~/.ssh/faucetlist_key_rsa -p 10500" \
     --exclude='.git' \
     --exclude='node_modules' \
     --exclude='.DS_Store' \
-    --exclude='banners/*' \
+    --exclude='media/*' \
     "$LOCAL_SITE_DIR/" \
     "faucetlist@directadmin-de.kxe.io:$REMOTE_SITE_PATH/" || { echo "❌ Site sync failed"; exit 1; }
 

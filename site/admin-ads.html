@@ -306,15 +306,18 @@
                     let html = '';
                     data.ads.forEach((ad, index) => {
                     html += `
-                            <div class="ad-item clearfix">
+                            <div class="ad-item clearfix" data-index="${index}">
                                 <button class="delete-btn" onclick="deleteAd(${index})">Delete</button>
-                                <button class="edit-btn" onclick="editAd(${index}, ${JSON.stringify(JSON.stringify(ad))})">Edit</button>
+                                <button class="edit-btn" data-index="${index}">Edit</button>
                                 <div class="ad-content">${escapeHtml(ad)}</div>
                                 <div class="ad-preview" style="${currentType === 'floating' ? 'width: 250px;' : ''} transform: scale(0.5); transform-origin: top left; height: 100px; overflow: hidden; border: 1px solid #ddd;">
                                     ${ad}
                                 </div>
                             </div>
                         `;
+                    // Store raw ad HTML for editing
+                    window.adContents = window.adContents || [];
+                    window.adContents[index] = ad;
                     });
                     $('#ad-container').html(html);
                 } else {
@@ -352,9 +355,15 @@
             }
         }
 
-        function editAd(index, adHtml) {
+        // Delegate click handler for edit buttons
+        $(document).on('click', '.edit-btn', function() {
+            const index = $(this).data('index');
+            editAd(index);
+        });
+
+        function editAd(index) {
             editingIndex = index;
-            $('#ad-html').val(adHtml);
+            $('#ad-html').val(window.adContents[index] || '');
             $('#form-title').text(`Edit ${currentType === 'banner' ? 'Banner' : 'Floating'} Ad`);
             $('#submit-btn').text('Save Changes');
             $('#cancel-btn').show();

@@ -80,12 +80,12 @@ if (empty($safeName)) {
 $filename = $safeName . '-' . time() . '.' . $extension;
 
 // Determine upload directory
-$bannersDir = dirname(__DIR__) . '/banners';
-if (!is_dir($bannersDir)) {
-    mkdir($bannersDir, 0755, true);
+$mediaDir = dirname(__DIR__) . '/media';
+if (!is_dir($mediaDir)) {
+    mkdir($mediaDir, 0755, true);
 }
 
-$targetPath = $bannersDir . '/' . $filename;
+$targetPath = $mediaDir . '/' . $filename;
 
 // Move uploaded file
 if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
@@ -95,7 +95,7 @@ if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
 }
 
 // Return success with URL
-$url = '/banners/' . $filename;
+$url = '/media/' . $filename;
 
 echo json_encode([
     'success' => true,
