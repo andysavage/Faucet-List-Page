@@ -18,8 +18,9 @@ Faucetlist.org is a cryptocurrency faucet management system that helps users tra
 **Backend API (site/api/)**
 - `faucet-sync.php` - Stores/loads user faucet lists as JSON files (keyed by user_id)
 - `get-banner-ads.php` - Returns ad templates from data files (supports banner and floating types)
-- `save-banner-ad.php` - Admin endpoint to save new ads (requires admin privileges)
+- `save-banner-ad.php` - Admin endpoint to save/edit ads (requires admin privileges)
 - `delete-banner-ad.php` - Admin endpoint to delete ads
+- `upload-banner.php` - Admin endpoint to upload images, saves to `/media/` folder
 - `auth-helper.php` - Authentication utility shared by ad endpoints
 
 **Data Storage (data/)**
@@ -51,37 +52,35 @@ Faucetlist.org is a cryptocurrency faucet management system that helps users tra
 ## Deployment
 
 **Local Development**
-- Open `site/index.html` directly in browser
-- Works entirely offline except for sync features
-- Ad system requires running API (won't show ads without PHP backend)
+- Requires PHP server (e.g. `php -S localhost:8000` in site/ folder)
+- Works offline for faucet tracking (localStorage)
+- Ad system requires PHP backend (won't show ads when opening file directly)
 
 **Production Deployment**
 - Use `./deploy-to-directadmin.sh` script
-- Syncs to DirectAdmin server at directadmin-de.kxe.io:10500
-- Protects server-created data (faucetlist/ directory, ads-floating.txt)
-- Requires `FAUCETLIST_PASSWORD` environment variable
+- Syncs site files to DirectAdmin server at directadmin-de.kxe.io:10500
+- Data files (ads, user data) managed on server only - NOT synced from local
+- Uploaded images in `/media/` folder are protected from deletion
+- Uses SSH key authentication (faucetlist_key_rsa)
 
 **Setup for Deploy Script**
 ```bash
-export FAUCETLIST_PASSWORD='your_password'
 ./deploy-to-directadmin.sh
 ```
 
 ## Important Implementation Details
 
-### Ad System Quirks
+### Ad System
 - Ads in `ads.txt` and `ads-floating.txt` are separated by `---` on its own line
-- `get-banner-ads.php` reads entire file and splits on `---` separator
+- PHP reads files server-side and picks random ad on each page load
 - Ad content is raw HTML - can contain `<img>`, `<a>`, `<script>` tags
-- No HTML escaping - admin must ensure safe ad content
-- Floating ads reference images already on server (`/banners/` path) - local test images are for reference only
+- Images uploaded via admin go to `/media/` folder (avoids ad-blocker keywords)
+- Admin can upload images, add/edit/delete ads via `admin-ads.html`
 
 ### Data Protection Strategy
-- `SERVER_ONLY_FILES` array in deploy script lists what never gets overwritten
-- Currently protects: `faucetlist/` (user data), `ads-floating.txt` (server-managed ads)
-- If new server-only data is created, add to this array in deploy script
+- Data files (`data/`) are NOT synced from local - managed entirely on server
+- Uploaded images in `media/*` are excluded from rsync --delete
 - Site files (`site/`) use `--delete` flag (removes deleted files from server)
-- Data files (`data/`) sync WITHOUT `--delete` (preserves server-created content)
 
 ### User Authentication Notes
 - Admin interface (`admin-ads.html`) requires login and admin privileges via `auth-helper.php`
@@ -100,10 +99,12 @@ export FAUCETLIST_PASSWORD='your_password'
 2. For floating ads, clear `faucetlist_floating_closed_ts` in localStorage to reset the 10-minute timer
 3. Verify different ads appear on page reload (PHP randomly selects from ads.txt/ads-floating.txt)
 
-### Adding New Ads
-1. Via admin: Go to `/admin-ads.html`, sign in, paste HTML, select type (Banner or Floating)
-2. Via direct server edit: SSH into server, edit `/home/faucetlist/data/ads.txt` or `ads-floating.txt`
-3. Format: Multiple ads separated by `---` on own line
+### Adding/Editing Ads
+1. Go to `/admin-ads.html` and sign in (requires admin privileges)
+2. Upload images using the upload section (saves to `/media/`)
+3. Add ad HTML using the uploaded image URL, or paste script tags for third-party ads
+4. Edit existing ads by clicking the Edit button
+5. Ads are stored in `data/ads.txt` (banner) or `data/ads-floating.txt` (floating)
 
 ### Testing User Data Sync
 1. Add a faucet while logged in
@@ -123,38 +124,50 @@ export FAUCETLIST_PASSWORD='your_password'
 faucetlist.org/
 ├── site/                    # Frontend + API
 │   ├── index.php           # Main app with PHP ad rotation
-│   ├── admin-ads.html      # Ad management interface
+│   ├── admin-ads.html      # Ad management interface (upload, add, edit, delete)
+│   ├── favicon.ico         # Root favicon for browser default
 │   ├── api/                # Backend endpoints
 │   │   ├── faucet-sync.php
 │   │   ├── get-banner-ads.php
 │   │   ├── save-banner-ad.php
 │   │   ├── delete-banner-ad.php
-│   │   ├── auth-helper.php
-│   │   └── [other utilities]
+│   │   ├── upload-banner.php
+│   │   └── auth-helper.php
 │   ├── js/
 │   │   └── auth.js         # JWT auth class
+│   ├── media/              # Uploaded ad images (server-only, protected)
 │   └── favicons/           # Site branding
-├── data/                    # Server-only data
-│   ├── ads.txt             # Banner ad templates
-│   ├── ads-floating.txt    # Floating ad templates
-│   └── faucetlist/         # User data (protected)
+├── data/                    # Local reference only (NOT synced to server)
+│   ├── ads.txt             # Example banner ads
+│   └── ads-floating.txt    # Example floating ads
 ├── deploy-to-directadmin.sh # Deployment script
-├── DEPLOYMENT.md           # Deployment guide
-└── [config files]
+└── AGENTS.md               # This file
+```
+
+**Server data structure** (at `/home/faucetlist/domains/faucetlist.org/`):
+```
+public_html/                 # Web root
+├── media/                   # Uploaded ad images
+└── [site files]
+data/                        # Outside web root
+├── ads.txt                  # Banner ad templates
+├── ads-floating.txt         # Floating ad templates  
+└── faucetlist/              # User data JSON files
 ```
 
 ## Current Status & Next Steps
 
 ### Deployment
-✅ **Automated rsync deployment working** - SSH key authentication via faucetlist-directadmin account
+✅ **Automated rsync deployment working** - SSH key authentication
 - Deploy script: `./deploy-to-directadmin.sh`
-- Protects server user data and ads-floating.txt from overwrites
-- All site files synced with --delete flag
+- Site files synced with --delete flag
+- Data files and uploaded media protected (not overwritten)
 
 ### Ad System
 ✅ **PHP-based ad rotation** - No JavaScript fetch, no CORS issues
-- Banner and floating ads rendered server-side from txt files
-- Admin interface still works for managing ads
+- Server-side random selection from txt files
+- Admin interface with image upload, add/edit/delete functionality
+- Images stored in `/media/` folder (avoids ad-blocker detection)
 
 ## Known Limitations
 
