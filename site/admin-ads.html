@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ad Management - Faucet List</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+
+        h1,
+        h2 {
+            color: #2ea2cc;
+        }
+
+        .section {
+            background: #f7f7f7;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+
+        .ad-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .ad-item {
+            background: #fff;
+            border: 1px solid #eee;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 3px;
+            position: relative;
+        }
+
+        .ad-content {
+            margin-bottom: 10px;
+            overflow-x: auto;
+            background: #fafafa;
+            padding: 10px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            float: right;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+
+        .button-primary {
+            background: #2ea2cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .button-primary:hover {
+            background: #1e8cbe;
+        }
+
+        .clearfix::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: #eee;
+            border-radius: 5px 5px 0 0;
+            cursor: pointer;
+        }
+
+        .tab.active {
+            background: #f7f7f7;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Ad Management</h1>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('banner')">Banners (Top/Right)</div>
+        <div class="tab" onclick="switchTab('floating')">Floating Ads (Bottom-Left)</div>
+    </div>
+
+    <div class="section">
+        <div id="ad-container" class="ad-list">
+            Loading ads...
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 id="form-title">Add New Banner Ad</h2>
+        <form id="add-ad-form">
+            <textarea id="ad-html" placeholder="Paste HTML snippet here..." required></textarea>
+            <button type="submit" class="button-primary" id="submit-btn">Add Banner Ad</button>
+        </form>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        let currentType = 'banner';
+
+        function switchTab(type) {
+            currentType = type;
+            $('.tab').removeClass('active');
+            $(`.tab:contains(${type === 'banner' ? 'Banners' : 'Floating'})`).addClass('active');
+            $('#form-title').text(`Add New ${type === 'banner' ? 'Banner' : 'Floating'} Ad`);
+            $('#submit-btn').text(`Add ${type === 'banner' ? 'Banner' : 'Floating'} Ad`);
+            loadAds();
+        }
+
+        // Protect page
+        async function checkAdmin() {
+            const session = auth.getSession();
+            if (!session) {
+                auth.login();
+                return;
+            }
+
+            // We'll verify server-side during data fetching
+            loadAds();
+        }
+
+        async function loadAds() {
+            $('#ad-container').html('Loading ads...');
+            const session = auth.getSession();
+            if (!session) return;
+
+            try {
+                const response = await fetch(`api/get-banner-ads.php?type=${currentType}&user_id=${session.combined_user_id}&t=${Date.now()}`);
+                const data = await response.json();
+
+                if (data.success && data.ads.length > 0) {
+                    let html = '';
+                    data.ads.forEach((ad, index) => {
+                        html += `
+                            <div class="ad-item clearfix">
+                                <button class="delete-btn" onclick="deleteAd(${index})">Delete</button>
+                                <div class="ad-content">${escapeHtml(ad)}</div>
+                                <div class="ad-preview" style="${currentType === 'floating' ? 'width: 250px;' : ''} transform: scale(0.5); transform-origin: top left; height: 100px; overflow: hidden; border: 1px solid #ddd;">
+                                    ${ad}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    $('#ad-container').html(html);
+                } else {
+                    $('#ad-container').html(`<p>No ${currentType} ads configured.</p>`);
+                }
+            } catch (error) {
+                $('#ad-container').html('<p style="color:red">Error loading ads. Admin privileges required.</p>');
+                console.error(error);
+            }
+        }
+
+        async function deleteAd(index) {
+            if (!confirm(`Are you sure you want to delete this ${currentType} ad?`)) return;
+            const session = auth.getSession();
+
+            try {
+                const response = await fetch('api/delete-banner-ad.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: session.combined_user_id,
+                        index: index,
+                        type: currentType
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    loadAds();
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('Connection error');
+                console.error(error);
+            }
+        }
+
+        $('#add-ad-form').on('submit', async function (e) {
+            e.preventDefault();
+            const html = $('#ad-html').val();
+            const session = auth.getSession();
+
+            try {
+                const response = await fetch('api/save-banner-ad.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: session.combined_user_id,
+                        html: html,
+                        type: currentType
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    $('#ad-html').val('');
+                    loadAds();
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('Connection error');
+                console.error(error);
+            }
+        });
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initial check
+        $(document).ready(() => checkAdmin());
+    </script>
+</body>
+
+</html>

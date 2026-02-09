@@ -6,16 +6,18 @@ A cryptocurrency faucet management system that helps you track and claim from cr
 
 *   **Add and Remove Faucets:** Easily add your favorite faucets with their name, URL, and a claim timer in minutes.
 *   **Automatic Timers:** Each faucet has a countdown timer that shows when it's ready to be claimed again.
-*   **Persistent Storage:** Your faucet list is saved in your browser's `localStorage`, so it persists between sessions on the same device and browser.
+*   **Guest Mode:** Your faucet list is saved in your browser's `localStorage`, so it persists between sessions on the same device and browser.
+*   **Optional Account Sync:** Sign in to sync your faucet list across devices and browsers.
 *   **Mobile Responsive:** Optimized for small screens - URL column hides on mobile, compact timer display.
 *   **Client-Side:** No server or database required. Just open the `index.html` file in a browser.
 
 ## Roadmap
 
 ### Phase 1: Website (Current)
-- LocalStorage for guest users
-- Optional account system for cloud sync (planned)
-- Community features for members (planned)
+- ✅ LocalStorage for guest users
+- ✅ Account system with cloud sync via auth.directsponsor.org
+- 🔄 Advert integration (pending)
+- Chrome extension (future)
 
 ### Phase 2: Chrome Extension (Future)
 - Browser notifications when faucets are ready

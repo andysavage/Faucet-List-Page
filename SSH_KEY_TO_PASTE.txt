@@ -1,0 +1,28 @@
+PASTE THIS INTO DirectAdmin SSH Public Keys FIELD
+================================================
+
+AAAAB3NzaC1yc2EAAAADAQABAAACAQDShAbgUugz2df0XgIzRvj3JEtUKSKpzFz5J7WegYsUFsY/s46vs2N8r0ZpSy4u7pX5oWiIKG2ttjXP6khM25Od4cX1WOpMeV2EPdeVqojiVS6ghcQ9DUN4XbC03w98FSLOGAQMOs3SCh8DGMxTQcqb8L8CSPGwYLoR6z4YhZm6GRx8d7HRCPaxbV6XR3ZXR2MWmLRJ9JaE36jYL1IXWDHmvfhzUwkgyT0WQw63jOjhhv4NysCUKDeVGpJNvhjmpENqzkkvwAMxECAu4NcU4Tez5L0bZu0TwVt87GWAAFmG9MEyxGZiVtH93SzNXbTZWrNpTGEB2iOB9JlkDJ0q3wbkIKKTSTbtGapI7pZ6gfN/H6iQyDZNZAxa7SHP0z19lbqVWD/FEdt95XMXmVUDHtR5hfeMgsrMy9PNGWHMSZ8Vhl6EGmR+u9iH/QddM0i95/xj8HnxpFOG/aCaSTAMWSC6v+mwWx//bskj6OQ/1dYiUMCCDWS+3ZJyaQVRbIE9ESeCy5+RYNiPkgVy75I5SpMyO4opr1xHx9yDbqv6NHd76hvcSQgK3mXMBNFQygVSIdwOoLRUQKI+A+LATeEXZ5QAo3dyFsG0ENvz9OlUCPEHUaUzKpfuvtJbIm7jpogE1hG9/QJ2lw+XrEp/5pD8mcC28sGKSTR8sdka2IH+qVp4OQ==
+
+
+STEPS
+=====
+
+1. Log in: https://directadmin-de.kxe.io:2222/evo/login
+   User: faucetlist
+   Password: Relation-229934-Intricate
+
+2. Go to Account Manager → SSH/Shell Access
+
+3. Find "SSH Public Keys" section
+
+4. Copy the long key above (the entire AAAA... line)
+
+5. Paste into the SSH Public Keys field
+
+6. Click Save
+
+7. Wait a minute, then test:
+   ssh -i ~/.ssh/faucetlist_key_rsa faucetlist@directadmin-de.kxe.io -p 10500
+
+8. If it works, run:
+   ./deploy-to-directadmin.sh

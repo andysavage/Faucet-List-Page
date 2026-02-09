@@ -1,0 +1,3 @@
+<a href="https://satoshihost.duckdns.org" target="_blank"><img src="banners/satsman1.gif" width="300" height="250" style="max-width:100%;height:auto;border:none;" alt="Advertisement"></a>
+---
+<a href="https://litebits.com" target="_blank"><img src="banners/litebits.png" width="300" height="250" style="max-width:100%;height:auto;border:none;" alt="Advertisement"></a>

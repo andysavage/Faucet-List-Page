@@ -1,60 +1,48 @@
-# Faucet List - Auth Integration Plan
+# Faucet List - Implementation Status
 
-## IMPORTANT: Hosting Requirements
-**Must be hosted on a VPS** - NOT DirectAdmin shared hosting because:
-- Need to protect the data folder (user faucet lists)
-- Need to run Syncthing for profile sync
-- Will be the 3rd site testing auth.directsponsor.org (alongside clickforcharity and roflfaucet)
+## Completed ✅
 
-## What We Have
-- **auth.js** (from clickforcharity) - Complete auth class that handles:
-  - JWT login via `auth.directsponsor.org`
-  - Session storage in localStorage (`directsponsor_session`)
-  - Auto-redirect back after login
-  - `isLoggedIn()`, `getSession()`, `login()`, `logout()`
-  - CSS classes: `.guest-only`, `.member-only`, `.admin-only` for showing/hiding content
+### Authentication & Sync
+- JWT login via `auth.directsponsor.org`
+- Session management in localStorage
+- Guest mode (localStorage only)
+- Cloud sync for logged-in users
+- Auto-sync on faucet add/delete/claim
+- Removed default faucets (were causing sync issues)
 
-## What's Needed
+### Core Features
+- Add/remove faucets with name, URL, timer
+- Countdown timers with visual progress bars
+- Mobile responsive design
+- Data persists across sessions
 
-### 1. Copy auth.js to Faucet-List-Page
-Minimal changes - just update branding from ClickForCharity to Faucet List
+## Remaining Tasks 🔄
 
-### 2. Add to index.html
-- Include `<script src="js/auth.js"></script>`
-- Add login/logout UI in header
-- Add `.member-only` sync controls
+### Edit Functionality
+- Make faucet entries editable (name, URL, timer)
+- Change "Delete" button to "Edit" button
+- Move delete function to the edit page/interface
 
-### 3. Create API endpoint (`api/faucets.php`)
-```php
-// GET: Load user's faucet list from server
-// POST: Save user's faucet list to server
-// Storage: JSON file per user (e.g., data/{user_id}.json)
-```
+### Advert Integration
+- Add ad banners/placements on the page
+- Consider positions: header, sidebar, or between faucet rows
 
-### 4. Add sync logic to index.html
-- On login: merge localStorage with server data
-- On faucet add/delete/claim: save to server if logged in
-- "Sync Now" button for manual sync
+### Future Ideas
+- Chrome extension for notifications
+- Community features
 
-## File Structure
-```
-Faucet-List-Page/
-├── index.html          (add auth UI + sync logic)
-├── js/
-│   └── auth.js         (copy from clickforcharity)
-├── api/
-│   └── faucets.php     (new - save/load user faucets)
-└── data/               (user faucet JSON files - protected)
-```
+## Technical Notes
 
-## Deployment Checklist
-- [ ] Get domain (e.g., faucets.directsponsor.org or standalone)
-- [ ] Set up on VPS (NOT DirectAdmin)
-- [ ] Configure Syncthing for profile sync
-- [ ] Set data folder permissions (writeable but not web-accessible)
-- [ ] Test auth flow with auth.directsponsor.org
+**Hosting:** Simple static hosting works (GitHub Pages, etc.) - sync handled by auth server API.
 
-## Reference
-- Auth server docs: `/home/andy/work/projects/auth-server/README.md`
-- ClickForCharity auth.js: `/home/andy/work/projects/clickforcharity/js/auth.js`
-- RoflFaucet site: `/home/andy/work/projects/roflfaucet/site/`
+**Data Storage:**
+- Guest users: localStorage only
+- Logged-in users: JSON files on auth server
+
+## Archived Implementation Notes
+<details>
+<summary>Original auth integration plan (completed)</summary>
+
+Previous plan involved VPS hosting, Syncthing, and separate auth.js file. 
+Simplified to inline auth class in index.html with auth server handling API.
+</details>
