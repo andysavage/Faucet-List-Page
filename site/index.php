@@ -324,7 +324,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
         .floating-ad-container {
             position: fixed;
             bottom: 20px;
-            left: 20px;
+            right: 20px;
             width: fit-content;
             max-width: calc(100% - 40px);
             height: auto;
