@@ -12,22 +12,15 @@
 #
 # WHAT IT DOES:
 #   1. Syncs all site files (HTML, JavaScript, CSS, PHP API) to the server
-#   2. Syncs configuration and ad template files to the data directory
-#   3. Protects server-created user data (never overwrites it)
+#   2. Data files (ads, user data) are managed on server only via admin interface
 #
 # DEPLOYMENT TARGETS:
-#   Site files:   /home/faucetlist/public_html/
-#   Data files:   /home/faucetlist/data/
+#   Site files:   /home/faucetlist/domains/faucetlist.org/public_html/
 #   Remote host:  faucetlist-directadmin (faucetlist DirectAdmin account)
 #
-# DATA PROTECTION:
-#   Files/directories in SERVER_ONLY_FILES array are NEVER synced to the server.
-#   This ensures user-created data (account files, etc.) is always preserved.
-#
-#   Currently protected:
-#   - faucetlist/  User account data created on server
-#
-#   If you create new server-side data directories, add them to SERVER_ONLY_FILES.
+# DATA MANAGEMENT:
+#   Data files (ads, user data) are NOT synced from local.
+#   They are managed entirely on the server via the admin interface.
 #
 # IMPORTANT NOTES:
 #   - Site files use --delete flag (removes deleted local files from server)
@@ -117,25 +110,12 @@ preview_deletions() {
         success "No files will be deleted."
     fi
 }
-REMOTE_SITE_PATH="/home/faucetlist/public_html"
-REMOTE_DATA_PATH="/home/faucetlist/data"
+REMOTE_SITE_PATH="/home/faucetlist/domains/faucetlist.org/public_html"
 
 LOCAL_SITE_DIR="./site"
-LOCAL_DATA_DIR="./data"
-
-# Note: Uses SSH key authentication via faucetlist-directadmin alias in ~/.ssh/config
-
-# Files that are ONLY created/modified on the server (user data)
-# These will NEVER be synced TO the server
-SERVER_ONLY_FILES=(
-    "faucetlist"           # Directory containing user account data
-    "ads-floating.txt"     # Floating ads managed on server via admin interface
-)
 
 echo "🚀 Deploying faucetlist.org to DirectAdmin server..."
 echo "   Remote: $REMOTE_HOST"
-echo ""
-echo "⚠️  PROTECTION MODE: Server-created user data will NOT be overwritten"
 echo ""
 
 # Auto-commit any pending changes
@@ -144,11 +124,6 @@ auto_commit_changes
 # Verify local directories exist
 if [ ! -d "$LOCAL_SITE_DIR" ]; then
     echo "❌ Error: Local site directory not found: $LOCAL_SITE_DIR"
-    exit 1
-fi
-
-if [ ! -d "$LOCAL_DATA_DIR" ]; then
-    echo "❌ Error: Local data directory not found: $LOCAL_DATA_DIR"
     exit 1
 fi
 
@@ -164,30 +139,10 @@ rsync -avz --delete -e "ssh -i ~/.ssh/faucetlist_key_rsa -p 10500" \
     "faucetlist@directadmin-de.kxe.io:$REMOTE_SITE_PATH/" || { echo "❌ Site sync failed"; exit 1; }
 
 echo ""
-echo "📊 Syncing template data files (ads, configs)..."
-echo "   Note: Server-created user data will be preserved"
-
-# Build rsync exclude list for server-only files
-EXCLUDE_ARGS=""
-for file in "${SERVER_ONLY_FILES[@]}"; do
-    EXCLUDE_ARGS="$EXCLUDE_ARGS --exclude='$file'"
-done
-
-rsync -avz $EXCLUDE_ARGS -e "ssh -i ~/.ssh/faucetlist_key_rsa -p 10500" \
-    "$LOCAL_DATA_DIR/" \
-    "faucetlist@directadmin-de.kxe.io:$REMOTE_DATA_PATH/" || { echo "❌ Data sync failed"; exit 1; }
-
-echo ""
 echo "✅ Deployment complete!"
 echo ""
 echo "📋 Summary:"
 echo "   ✓ Site files synced to: $REMOTE_SITE_PATH"
-echo "   ✓ Config/ads synced to: $REMOTE_DATA_PATH"
-echo "   ✓ Server user data PROTECTED (not overwritten)"
+echo "   ✓ Data files managed on server (not synced)"
 echo ""
 echo "🔍 Verify deployment by visiting: https://faucetlist.org"
-echo ""
-echo "📌 Protected directories on server (will NOT be touched):"
-for file in "${SERVER_ONLY_FILES[@]}"; do
-    echo "   - $REMOTE_DATA_PATH/$file"
-done

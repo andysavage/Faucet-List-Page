@@ -114,11 +114,88 @@
             border-bottom: none;
             font-weight: bold;
         }
+
+        .upload-section {
+            background: #e8f4f8;
+            border: 1px solid #b8d4e3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .upload-section h3 {
+            margin-top: 0;
+            color: #2ea2cc;
+        }
+
+        .upload-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .upload-row input[type="file"] {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .upload-result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 3px;
+            display: none;
+        }
+
+        .upload-result.error {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+        }
+
+        .url-display {
+            font-family: monospace;
+            background: #fff;
+            padding: 5px 10px;
+            border-radius: 3px;
+            margin: 5px 0;
+            word-break: break-all;
+        }
+
+        .copy-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .copy-btn:hover {
+            background: #218838;
+        }
     </style>
 </head>
 
 <body>
     <h1>Ad Management</h1>
+
+    <div class="upload-section">
+        <h3>📤 Upload Banner Image</h3>
+        <p style="margin: 0 0 10px; font-size: 14px; color: #666;">Upload an image, then use the URL in your ad HTML below.</p>
+        <div class="upload-row">
+            <input type="file" id="banner-file" accept="image/jpeg,image/png,image/gif,image/webp">
+            <button type="button" class="button-primary" onclick="uploadBanner()">Upload</button>
+        </div>
+        <div id="upload-result" class="upload-result">
+            <strong>Uploaded!</strong> Use this URL in your ad:
+            <div class="url-display" id="uploaded-url"></div>
+            <button class="copy-btn" onclick="copyUrl()">Copy URL</button>
+            <button class="copy-btn" onclick="copyImgTag()">Copy IMG Tag</button>
+        </div>
+    </div>
 
     <div class="tabs">
         <div class="tab active" onclick="switchTab('banner')">Banners (Top/Right)</div>
@@ -255,6 +332,66 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+
+        let lastUploadedUrl = '';
+
+        async function uploadBanner() {
+            const fileInput = document.getElementById('banner-file');
+            const resultDiv = document.getElementById('upload-result');
+            const urlDiv = document.getElementById('uploaded-url');
+
+            if (!fileInput.files || !fileInput.files[0]) {
+                alert('Please select a file first');
+                return;
+            }
+
+            const session = auth.getSession();
+            if (!session) {
+                alert('Please sign in first');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('banner', fileInput.files[0]);
+            formData.append('user_id', session.combined_user_id);
+
+            try {
+                resultDiv.style.display = 'none';
+                resultDiv.className = 'upload-result';
+
+                const response = await fetch('api/upload-banner.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    lastUploadedUrl = result.url;
+                    urlDiv.textContent = result.url;
+                    resultDiv.style.display = 'block';
+                    fileInput.value = '';
+                } else {
+                    resultDiv.className = 'upload-result error';
+                    urlDiv.textContent = 'Error: ' + result.error;
+                    resultDiv.style.display = 'block';
+                }
+            } catch (error) {
+                resultDiv.className = 'upload-result error';
+                urlDiv.textContent = 'Upload failed: ' + error.message;
+                resultDiv.style.display = 'block';
+            }
+        }
+
+        function copyUrl() {
+            navigator.clipboard.writeText(lastUploadedUrl);
+            alert('URL copied!');
+        }
+
+        function copyImgTag() {
+            const imgTag = `<img src="${lastUploadedUrl}" alt="Advertisement">`;
+            navigator.clipboard.writeText(imgTag);
+            alert('IMG tag copied!');
         }
 
         // Initial check
