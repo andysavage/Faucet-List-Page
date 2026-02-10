@@ -195,10 +195,10 @@ $floatingAd = getRandomAd('ads-floating.txt');
             background: linear-gradient(to bottom, white, #f7f7f7);
         }
 
-        .url-cell {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .main-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
         }
 
         @media screen and (max-width: 600px) {
@@ -217,11 +217,9 @@ $floatingAd = getRandomAd('ads-floating.txt');
             #add-faucet-form button {
                 width: 100%;
             }
-        }
 
-        @media screen and (max-width: 600px) {
-            .url-column {
-                display: none;
+            .main-content {
+                padding: 0 10px;
             }
         }
 
@@ -435,39 +433,40 @@ $floatingAd = getRandomAd('ads-floating.txt');
         <?php echo $bannerAd; ?>
     </div>
 
-    <h1>Faucet List</h1>
+    <div class="main-content">
+        <h1>Faucet List</h1>
 
-    <details>
-        <summary>Add New Faucet</summary>
-        <form id="add-faucet-form">
-            <table>
+        <details>
+            <summary>Add New Faucet</summary>
+            <form id="add-faucet-form">
+                <table>
+                    <tr>
+                        <td>Name</td>
+                        <td><input type="text" id="faucet-name" required></td>
+                        <td>Timer (in minutes)</td>
+                        <td><input type="number" id="faucet-timer" required></td>
+                    </tr>
+                    <tr>
+                        <td>Url</td>
+                        <td><input type="text" id="faucet-url" required></td>
+                        <td colspan="2"><button type="submit" class="button-primary">Submit</button></td>
+                    </tr>
+                </table>
+            </form>
+        </details>
+        <table id="faucet-table">
+            <thead>
                 <tr>
-                    <td>Name</td>
-                    <td><input type="text" id="faucet-name" required></td>
-                    <td>Timer (in minutes)</td>
-                    <td><input type="number" id="faucet-timer" required></td>
+                    <th>Name</th>
+                    <th>Progress</th>
+                    <th>Action</th>
                 </tr>
-                <tr>
-                    <td>Url</td>
-                    <td><input type="text" id="faucet-url" required></td>
-                    <td colspan="2"><button type="submit" class="button-primary">Submit</button></td>
-                </tr>
-            </table>
-        </form>
-    </details>
-    <table id="faucet-table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th class="url-column">Url</th>
-                <th>Progress</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Faucet rows will be inserted here by JavaScript -->
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                <!-- Faucet rows will be inserted here by JavaScript -->
+            </tbody>
+        </table>
+    </div>
 
     <script>
         $(document).ready(function () {
@@ -567,8 +566,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
                 });
 
                 if (faucets.length === 0) {
-                    const colspan = isSmallScreen ? 3 : 4;
-                    tableBody.append(`<tr><td colspan="${colspan}">No record found</td></tr>`);
+                    tableBody.append(`<tr><td colspan="3">No record found</td></tr>`);
                     return;
                 }
 
@@ -602,12 +600,9 @@ $floatingAd = getRandomAd('ads-floating.txt');
                         `;
                     }
 
-                    const displayUrl = faucet.url.replace(/^https?:\/\//, '');
-
                     const row = `
                         <tr>
                             <td>${faucet.name}</td>
-                            <td class="url-cell url-column" title="${faucet.url}">${displayUrl}</td>
                             <td>${progressCellHtml}</td>
                             <td>
                                 <button class="button-secondary edit-faucet" data-id="${faucet.id}">Edit</button>
