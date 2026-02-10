@@ -151,6 +151,21 @@
             tbody.innerHTML = '';
             var now = Math.floor(Date.now() / 1000);
 
+            // Sort: ready first, then by time remaining
+            demoFaucets.sort(function(a, b) {
+                var a_last = a.last_claim || 0;
+                var b_last = b.last_claim || 0;
+                var a_left = Math.max(0, (a.timer * 60) - (now - a_last));
+                var b_left = Math.max(0, (b.timer * 60) - (now - b_last));
+                var a_ready = a_left === 0;
+                var b_ready = b_left === 0;
+
+                if (a_ready && !b_ready) return -1;
+                if (!a_ready && b_ready) return 1;
+                if (a_ready && b_ready) return a.timer - b.timer;
+                return a_left - b_left;
+            });
+
             demoFaucets.forEach(function(faucet) {
                 var lastClaim = faucet.last_claim || 0;
                 var timerSecs = faucet.timer * 60;
