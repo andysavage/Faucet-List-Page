@@ -397,7 +397,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
             return `${mins}:${secs}`;
         }
 
-        function progress(timeleft, timetotal, $element) {
+        function progress(timeleft, timetotal, $element, faucetName) {
             var progressBarWidth = timeleft * $element.width() / timetotal;
             var text = formatTime(timeleft);
             var $fill = $element.find('.progress-bar-fill');
@@ -408,9 +408,10 @@ $floatingAd = getRandomAd('ads-floating.txt');
 
             if (timeleft > 0) {
                 setTimeout(function () {
-                    progress(timeleft - 1, timetotal, $element);
+                    progress(timeleft - 1, timetotal, $element, faucetName);
                 }, 1000);
             } else {
+                if (faucetName) notifyReady(faucetName);
                 renderFaucets();
             }
         }
@@ -422,6 +423,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
     <div class="auth-bar">
         <div class="auth-info" id="auth-status"></div>
         <div class="auth-buttons">
+            <button id="notify-btn" class="button-secondary" title="Enable notifications">🔔 Off</button>
             <a href="/demo.html" class="button-secondary">Demo</a>
             <button id="login-btn" class="button-secondary" style="display:none;">Sign In</button>
             <button id="logout-btn" class="button-secondary" style="display:none;">Sign Out</button>
@@ -472,6 +474,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
         $(document).ready(function () {
             auth.handleAuthCallback();
             updateAuthUI();
+            initNotifications();
 
             const FaucetCloud = {
                 syncUrl: './api/faucet-sync.php',
@@ -613,7 +616,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
                     tableBody.append(row);
 
                     if (timeleft > 0) {
-                        progress(timeleft, timerInSeconds, $('#timeBar_all_' + faucet.id));
+                        progress(timeleft, timerInSeconds, $('#timeBar_all_' + faucet.id), faucet.name);
                     }
                 });
             }
@@ -690,6 +693,54 @@ $floatingAd = getRandomAd('ads-floating.txt');
                     renderFaucets();
                 }
             });
+
+            // Notifications
+            function initNotifications() {
+                const enabled = localStorage.getItem('faucetlist_notify') === 'true';
+                updateNotifyButton(enabled && Notification.permission === 'granted');
+
+                $('#notify-btn').on('click', async function() {
+                    const currentlyEnabled = localStorage.getItem('faucetlist_notify') === 'true';
+                    
+                    if (currentlyEnabled) {
+                        localStorage.setItem('faucetlist_notify', 'false');
+                        updateNotifyButton(false);
+                    } else {
+                        if (!('Notification' in window)) {
+                            alert('Your browser does not support notifications');
+                            return;
+                        }
+                        
+                        let permission = Notification.permission;
+                        if (permission === 'default') {
+                            permission = await Notification.requestPermission();
+                        }
+                        
+                        if (permission === 'granted') {
+                            localStorage.setItem('faucetlist_notify', 'true');
+                            updateNotifyButton(true);
+                        } else {
+                            alert('Notification permission denied');
+                        }
+                    }
+                });
+            }
+
+            function updateNotifyButton(enabled) {
+                $('#notify-btn').text(enabled ? '🔔 On' : '🔔 Off');
+                $('#notify-btn').attr('title', enabled ? 'Disable notifications' : 'Enable notifications');
+            }
+
+            function notifyReady(faucetName) {
+                if (localStorage.getItem('faucetlist_notify') !== 'true') return;
+                if (Notification.permission !== 'granted') return;
+                
+                new Notification('Faucet Ready!', {
+                    body: faucetName + ' is ready to claim',
+                    icon: '/favicons/favicon-96x96.png',
+                    tag: 'faucet-' + faucetName
+                });
+            }
 
             function updateAuthUI() {
                 const isLoggedIn = auth.isLoggedIn();
