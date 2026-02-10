@@ -152,17 +152,80 @@
             font-weight: bold;
         }
 
-        .upload-section {
-            background: #e8f4f8;
-            border: 1px solid #b8d4e3;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
+        .copy-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
         }
 
-        .upload-section h3 {
-            margin-top: 0;
-            color: #2ea2cc;
+        .copy-btn:hover {
+            background: #218838;
+        }
+
+        .mode-toggle {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .mode-option {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .mode-option:hover {
+            border-color: #2ea2cc;
+        }
+
+        .mode-option:has(input:checked) {
+            border-color: #2ea2cc;
+            background: #e8f4f8;
+        }
+
+        .mode-option input[type="radio"] {
+            margin-right: 8px;
+        }
+
+        .mode-option span {
+            font-weight: bold;
+        }
+
+        .mode-option small {
+            display: block;
+            margin-top: 5px;
+            margin-left: 22px;
+            color: #666;
+            font-size: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-group input[type="url"] {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 14px;
         }
 
         .upload-row {
@@ -184,55 +247,18 @@
             border: 1px solid #c3e6cb;
             border-radius: 3px;
             display: none;
+            font-size: 13px;
         }
 
         .upload-result.error {
             background: #f8d7da;
             border-color: #f5c6cb;
         }
-
-        .url-display {
-            font-family: monospace;
-            background: #fff;
-            padding: 5px 10px;
-            border-radius: 3px;
-            margin: 5px 0;
-            word-break: break-all;
-        }
-
-        .copy-btn {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .copy-btn:hover {
-            background: #218838;
-        }
     </style>
 </head>
 
 <body>
     <h1>Ad Management</h1>
-
-    <div class="upload-section">
-        <h3>📤 Upload Banner Image</h3>
-        <p style="margin: 0 0 10px; font-size: 14px; color: #666;">Upload an image, then use the URL in your ad HTML below.</p>
-        <div class="upload-row">
-            <input type="file" id="banner-file" accept="image/jpeg,image/png,image/gif,image/webp">
-            <button type="button" class="button-primary" onclick="uploadBanner()">Upload</button>
-        </div>
-        <div id="upload-result" class="upload-result">
-            <strong>Uploaded!</strong> Use this URL in your ad:
-            <div class="url-display" id="uploaded-url"></div>
-            <button class="copy-btn" onclick="copyUrl()">Copy URL</button>
-            <button class="copy-btn" onclick="copyImgTag()">Copy IMG Tag</button>
-        </div>
-    </div>
 
     <div class="tabs">
         <div class="tab active" onclick="switchTab('banner')">Banners (Top/Right)</div>
@@ -250,8 +276,47 @@
         <div id="editing-notice" class="editing-notice" style="display: none;">
             ✏️ Editing ad #<span id="editing-index"></span> - <a href="#" onclick="cancelEdit(); return false;">Cancel</a>
         </div>
+
+        <div class="mode-toggle">
+            <label class="mode-option">
+                <input type="radio" name="ad-mode" value="simple" checked onchange="switchMode('simple')">
+                <span>📷 Simple Image Ad</span>
+                <small>Upload image + enter link URL</small>
+            </label>
+            <label class="mode-option">
+                <input type="radio" name="ad-mode" value="custom" onchange="switchMode('custom')">
+                <span>📝 Custom Code</span>
+                <small>Paste HTML/JS snippet (e.g. a-ads.com)</small>
+            </label>
+        </div>
+
         <form id="add-ad-form">
-            <textarea id="ad-html" placeholder="Paste HTML snippet here..." required></textarea>
+            <!-- Simple Image Ad Mode -->
+            <div id="simple-mode">
+                <div class="form-group">
+                    <label for="banner-file">Banner Image:</label>
+                    <div class="upload-row">
+                        <input type="file" id="banner-file" accept="image/jpeg,image/png,image/gif,image/webp">
+                        <button type="button" class="button-primary" onclick="uploadBanner()">Upload</button>
+                    </div>
+                    <div id="upload-result" class="upload-result">
+                        <strong>✓ Uploaded:</strong> <span id="uploaded-url"></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="link-url">Link URL (where ad clicks go):</label>
+                    <input type="url" id="link-url" placeholder="https://example.com/landing-page">
+                </div>
+            </div>
+
+            <!-- Custom Code Mode -->
+            <div id="custom-mode" style="display: none;">
+                <div class="form-group">
+                    <label for="ad-html">HTML/JavaScript Code:</label>
+                    <textarea id="ad-html" placeholder="Paste your ad code here (HTML, JavaScript, etc.)..."></textarea>
+                </div>
+            </div>
+
             <button type="submit" class="button-primary" id="submit-btn">Add Banner Ad</button>
             <button type="button" class="cancel-btn" id="cancel-btn" style="display: none;" onclick="cancelEdit()">Cancel Edit</button>
         </form>
@@ -261,7 +326,19 @@
     <script src="js/auth.js"></script>
     <script>
         let currentType = 'banner';
+        let currentMode = 'simple';  // 'simple' or 'custom'
         let editingIndex = -1;  // -1 means adding new, >= 0 means editing that index
+
+        function switchMode(mode) {
+            currentMode = mode;
+            if (mode === 'simple') {
+                $('#simple-mode').show();
+                $('#custom-mode').hide();
+            } else {
+                $('#simple-mode').hide();
+                $('#custom-mode').show();
+            }
+        }
 
         function switchTab(type) {
             currentType = type;
@@ -363,7 +440,13 @@
 
         function editAd(index) {
             editingIndex = index;
-            $('#ad-html').val(window.adContents[index] || '');
+            const adContent = window.adContents[index] || '';
+            
+            // Switch to custom mode for editing (existing ads are raw HTML)
+            $('input[name="ad-mode"][value="custom"]').prop('checked', true);
+            switchMode('custom');
+            $('#ad-html').val(adContent);
+            
             $('#form-title').text(`Edit ${currentType === 'banner' ? 'Banner' : 'Floating'} Ad`);
             $('#submit-btn').text('Save Changes');
             $('#cancel-btn').show();
@@ -375,7 +458,15 @@
 
         function cancelEdit() {
             editingIndex = -1;
+            // Reset form fields
             $('#ad-html').val('');
+            $('#link-url').val('');
+            $('#upload-result').hide();
+            lastUploadedUrl = '';
+            // Reset to simple mode
+            $('input[name="ad-mode"][value="simple"]').prop('checked', true);
+            switchMode('simple');
+            // Update UI
             $('#form-title').text(`Add New ${currentType === 'banner' ? 'Banner' : 'Floating'} Ad`);
             $('#submit-btn').text(`Add ${currentType === 'banner' ? 'Banner' : 'Floating'} Ad`);
             $('#cancel-btn').hide();
@@ -384,8 +475,29 @@
 
         $('#add-ad-form').on('submit', async function (e) {
             e.preventDefault();
-            const html = $('#ad-html').val();
             const session = auth.getSession();
+            let html;
+
+            if (currentMode === 'simple') {
+                // Generate HTML from image URL and link
+                if (!lastUploadedUrl) {
+                    alert('Please upload an image first');
+                    return;
+                }
+                const linkUrl = $('#link-url').val().trim();
+                if (linkUrl) {
+                    html = `<a href="${linkUrl}" target="_blank" rel="noopener"><img src="${lastUploadedUrl}" alt="Advertisement" style="max-width:100%;"></a>`;
+                } else {
+                    html = `<img src="${lastUploadedUrl}" alt="Advertisement" style="max-width:100%;">`;
+                }
+            } else {
+                // Custom code mode
+                html = $('#ad-html').val().trim();
+                if (!html) {
+                    alert('Please enter ad code');
+                    return;
+                }
+            }
 
             const payload = {
                 user_id: session.combined_user_id,
@@ -470,17 +582,6 @@
                 urlDiv.textContent = 'Upload failed: ' + error.message;
                 resultDiv.style.display = 'block';
             }
-        }
-
-        function copyUrl() {
-            navigator.clipboard.writeText(lastUploadedUrl);
-            alert('URL copied!');
-        }
-
-        function copyImgTag() {
-            const imgTag = `<img src="${lastUploadedUrl}" alt="Advertisement">`;
-            navigator.clipboard.writeText(imgTag);
-            alert('IMG tag copied!');
         }
 
         // Initial check
