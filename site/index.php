@@ -397,6 +397,17 @@ $floatingAd = getRandomAd('ads-floating.txt');
             return `${mins}:${secs}`;
         }
 
+        function notifyReady(faucetName) {
+            if (localStorage.getItem('faucetlist_notify') !== 'true') return;
+            if (Notification.permission !== 'granted') return;
+            
+            new Notification('Faucet Ready!', {
+                body: faucetName + ' is ready to claim',
+                icon: '/favicons/favicon-96x96.png',
+                tag: 'faucet-' + faucetName
+            });
+        }
+
         function progress(timeleft, timetotal, $element, faucetName) {
             var progressBarWidth = timeleft * $element.width() / timetotal;
             var text = formatTime(timeleft);
@@ -729,17 +740,6 @@ $floatingAd = getRandomAd('ads-floating.txt');
             function updateNotifyButton(enabled) {
                 $('#notify-btn').text(enabled ? '🔔 On' : '🔔 Off');
                 $('#notify-btn').attr('title', enabled ? 'Disable notifications' : 'Enable notifications');
-            }
-
-            function notifyReady(faucetName) {
-                if (localStorage.getItem('faucetlist_notify') !== 'true') return;
-                if (Notification.permission !== 'granted') return;
-                
-                new Notification('Faucet Ready!', {
-                    body: faucetName + ' is ready to claim',
-                    icon: '/favicons/favicon-96x96.png',
-                    tag: 'faucet-' + faucetName
-                });
             }
 
             function updateAuthUI() {
