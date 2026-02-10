@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faucet List – Demo</title>
+    <link rel="icon" type="image/png" href="/favicons/favicon-96x96.png" sizes="96x96" />
+    <link rel="shortcut icon" href="/favicons/favicon.ico" />
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 { margin-bottom: 5px; }
+        .subtitle {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #2ea2cc;
+            text-decoration: none;
+        }
+        .back-link:hover { text-decoration: underline; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        th, td {
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th { background: #f7f7f7; }
+        .progressBar {
+            width: 100%;
+            height: 22px;
+            background-color: #28a745;
+            color: white;
+            line-height: 22px;
+            font-weight: bold;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .progressBar .progress-bar-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background-color: #17a2b8;
+            z-index: 1;
+        }
+        .progressBar .progress-bar-text {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
+        .button-primary {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #2ea2cc;
+            border: 1px solid #0074a2;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 3px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .button-primary:hover { background: #1e8cbe; }
+        .note {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f5e9;
+            border-left: 4px solid #28a745;
+            color: #333;
+        }
+        .note a { color: #2ea2cc; }
+        @media (max-width: 500px) {
+            .url-col { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-link">← Back to Faucet List</a>
+    <h1>Demo</h1>
+    <p class="subtitle">See how the timers work with these examples</p>
+    
+    <table id="demo-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th class="url-col">Timer</th>
+                <th>Progress</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    
+    <div class="note">
+        <strong>This is a demo.</strong> Click "Claim" to start a timer.<br>
+        <a href="/">Create your own list</a> to track real faucets – no signup needed.
+    </div>
+
+    <script>
+        var demoFaucets = [
+            { id: 1, name: 'Example Faucet 1', timer: 5, last_claim: 0 },
+            { id: 2, name: 'Example Faucet 2', timer: 4, last_claim: 0 },
+            { id: 3, name: 'Example Faucet 3', timer: 3, last_claim: 0 },
+            { id: 4, name: 'Example Faucet 4', timer: 2, last_claim: 0 },
+            { id: 5, name: 'Example Faucet 5', timer: 1, last_claim: 0 }
+        ];
+
+        function formatTime(seconds) {
+            var mins = Math.floor(seconds / 60);
+            var secs = seconds % 60;
+            return mins + ':' + (secs < 10 ? '0' : '') + secs;
+        }
+
+        function progress(timeleft, timetotal, el, faucetId) {
+            var fill = el.querySelector('.progress-bar-fill');
+            var timeText = el.querySelector('.time-left');
+            var width = (timeleft / timetotal) * 100;
+            
+            fill.style.width = width + '%';
+            timeText.textContent = formatTime(timeleft);
+
+            if (timeleft > 0) {
+                setTimeout(function() {
+                    progress(timeleft - 1, timetotal, el, faucetId);
+                }, 1000);
+            } else {
+                renderDemo();
+            }
+        }
+
+        function renderDemo() {
+            var tbody = document.querySelector('#demo-table tbody');
+            tbody.innerHTML = '';
+            var now = Math.floor(Date.now() / 1000);
+
+            demoFaucets.forEach(function(faucet) {
+                var lastClaim = faucet.last_claim || 0;
+                var timerSecs = faucet.timer * 60;
+                var timeleft = Math.max(0, timerSecs - (now - lastClaim));
+                var isReady = timeleft === 0;
+
+                var progressHtml;
+                if (isReady) {
+                    progressHtml = '<div class="progressBar" id="bar_' + faucet.id + '">' +
+                        '<span>Ready (' + faucet.timer + ' min)</span></div>';
+                } else {
+                    progressHtml = '<div class="progressBar" id="bar_' + faucet.id + '">' +
+                        '<div class="progress-bar-fill" style="width:' + ((timeleft/timerSecs)*100) + '%"></div>' +
+                        '<div class="progress-bar-text">' +
+                        '<span class="time-left">' + formatTime(timeleft) + '</span>' +
+                        '<span>' + faucet.timer + ' min</span></div></div>';
+                }
+
+                var row = document.createElement('tr');
+                row.innerHTML = '<td>' + faucet.name + '</td>' +
+                    '<td class="url-col">' + faucet.timer + ' min</td>' +
+                    '<td>' + progressHtml + '</td>' +
+                    '<td><button class="button-primary" onclick="claimFaucet(' + faucet.id + ')">Claim</button></td>';
+                tbody.appendChild(row);
+
+                if (!isReady) {
+                    var bar = document.getElementById('bar_' + faucet.id);
+                    progress(timeleft, timerSecs, bar, faucet.id);
+                }
+            });
+        }
+
+        function claimFaucet(id) {
+            var faucet = demoFaucets.find(function(f) { return f.id === id; });
+            if (faucet) {
+                faucet.last_claim = Math.floor(Date.now() / 1000);
+                renderDemo();
+            }
+        }
+
+        renderDemo();
+    </script>
+</body>
+</html>

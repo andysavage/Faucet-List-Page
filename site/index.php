@@ -424,6 +424,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
     <div class="auth-bar">
         <div class="auth-info" id="auth-status"></div>
         <div class="auth-buttons">
+            <a href="/demo.html" class="button-secondary">Demo</a>
             <button id="login-btn" class="button-secondary" style="display:none;">Sign In</button>
             <button id="logout-btn" class="button-secondary" style="display:none;">Sign Out</button>
         </div>
