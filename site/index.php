@@ -252,6 +252,49 @@ $floatingAd = getRandomAd('ads-floating.txt');
         .auth-buttons {
             display: flex;
             gap: 10px;
+            align-items: center;
+        }
+
+        /* Dropdown Menu */
+        .menu-dropdown {
+            position: relative;
+        }
+
+        .menu-dropdown-toggle {
+            cursor: pointer;
+            min-width: 36px;
+            text-align: center;
+        }
+
+        .menu-dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            margin-top: 4px;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            min-width: 100px;
+            z-index: 100;
+        }
+
+        .menu-dropdown-content a {
+            display: block;
+            padding: 8px 12px;
+            color: #333;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .menu-dropdown-content a:hover {
+            background: #f7f7f7;
+        }
+
+        .menu-dropdown:hover .menu-dropdown-content,
+        .menu-dropdown.open .menu-dropdown-content {
+            display: block;
         }
 
         /* Modal Styles */
@@ -444,7 +487,13 @@ $floatingAd = getRandomAd('ads-floating.txt');
         <div class="auth-info" id="auth-status"></div>
         <div class="auth-buttons">
             <button id="notify-btn" class="button-secondary" title="Enable notifications">🔔 Off</button>
-            <a href="/demo.html" class="button-secondary">Demo</a>
+            <div class="menu-dropdown">
+                <button class="button-secondary menu-dropdown-toggle" title="More">⋯</button>
+                <div class="menu-dropdown-content">
+                    <a href="/demo.html">Demo</a>
+                    <a href="/about.html">About</a>
+                </div>
+            </div>
             <button id="login-btn" class="button-secondary" style="display:none;">Sign In</button>
             <button id="logout-btn" class="button-secondary" style="display:none;">Sign Out</button>
         </div>
@@ -751,6 +800,15 @@ $floatingAd = getRandomAd('ads-floating.txt');
                 $('#notify-btn').text(enabled ? '🔔 On' : '🔔 Off');
                 $('#notify-btn').attr('title', enabled ? 'Disable notifications' : 'Enable notifications');
             }
+
+            // Dropdown menu (click for mobile)
+            $('.menu-dropdown-toggle').on('click', function(e) {
+                e.stopPropagation();
+                $(this).closest('.menu-dropdown').toggleClass('open');
+            });
+            $(document).on('click', function() {
+                $('.menu-dropdown').removeClass('open');
+            });
 
             function updateAuthUI() {
                 const isLoggedIn = auth.isLoggedIn();
