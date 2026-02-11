@@ -318,8 +318,8 @@ $floatingAd = getRandomAd('ads-floating.txt');
             background-color: #c82333;
         }
 
-        /* Floating Ad Styles */
-        .floating-ad-container {
+        /* Floating Notice Styles */
+        .float-notice {
             position: fixed;
             bottom: 20px;
             right: 20px;
@@ -349,7 +349,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
             }
         }
 
-        .floating-ad-close {
+        .float-notice-close {
             position: absolute;
             top: -12px;
             right: -12px;
@@ -367,12 +367,12 @@ $floatingAd = getRandomAd('ads-floating.txt');
             transition: transform 0.2s, color 0.2s;
         }
 
-        .floating-ad-close:hover {
+        .float-notice-close:hover {
             color: #e74c3c;
             transform: scale(1.1);
         }
 
-        .floating-ad-content {
+        .float-notice-content {
             width: 100%;
             height: 100%;
             overflow: hidden;
@@ -380,7 +380,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
             justify-content: center;
         }
 
-        .floating-ad-content img {
+        .float-notice-content img {
             display: block;
             max-width: 100%;
             border-radius: 7px;
@@ -389,6 +389,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         var renderFaucets;
+        var activeTimers = {}; // Track active timers by faucet ID
 
         function formatTime(seconds) {
             const mins = Math.floor(seconds / 60);
@@ -408,7 +409,14 @@ $floatingAd = getRandomAd('ads-floating.txt');
             });
         }
 
-        function progress(timeleft, timetotal, $element, faucetName) {
+        function clearAllTimers() {
+            for (var id in activeTimers) {
+                clearTimeout(activeTimers[id]);
+            }
+            activeTimers = {};
+        }
+
+        function progress(timeleft, timetotal, $element, faucetId, faucetName) {
             var progressBarWidth = timeleft * $element.width() / timetotal;
             var text = formatTime(timeleft);
             var $fill = $element.find('.progress-bar-fill');
@@ -418,10 +426,11 @@ $floatingAd = getRandomAd('ads-floating.txt');
             $fill.animate({ width: progressBarWidth }, timeleft === timetotal ? 0 : 1000, 'linear');
 
             if (timeleft > 0) {
-                setTimeout(function () {
-                    progress(timeleft - 1, timetotal, $element, faucetName);
+                activeTimers[faucetId] = setTimeout(function () {
+                    progress(timeleft - 1, timetotal, $element, faucetId, faucetName);
                 }, 1000);
             } else {
+                delete activeTimers[faucetId];
                 if (faucetName) notifyReady(faucetName);
                 renderFaucets();
             }
@@ -558,6 +567,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
             };
 
             renderFaucets = async function () {
+                clearAllTimers();
                 const isSmallScreen = window.innerWidth <= 600;
                 const isTinyScreen = window.innerWidth <= 320;
                 let faucets = await FaucetStore.getFaucets();
@@ -627,7 +637,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
                     tableBody.append(row);
 
                     if (timeleft > 0) {
-                        progress(timeleft, timerInSeconds, $('#timeBar_all_' + faucet.id), faucet.name);
+                        progress(timeleft, timerInSeconds, $('#timeBar_all_' + faucet.id), faucet.id, faucet.name);
                     }
                 });
             }
@@ -804,22 +814,22 @@ $floatingAd = getRandomAd('ads-floating.txt');
         </div>
     </div>
 <?php if ($floatingAd): ?>
-    <div id="floating-ad" class="floating-ad-container">
-        <div class="floating-ad-close" onclick="closeFloatingAd()" title="Close Ad">×</div>
-        <div class="floating-ad-content"><?php echo $floatingAd; ?></div>
+    <div id="float-notice" class="float-notice">
+        <div class="float-notice-close" onclick="closeNotice()" title="Close">×</div>
+        <div class="float-notice-content"><?php echo $floatingAd; ?></div>
     </div>
     <script>
     (function() {
         var HIDE_DURATION = 10 * 60 * 1000; // 10 minutes
         var STORAGE_KEY = 'faucetlist_floating_closed_ts';
-        var container = document.getElementById('floating-ad');
+        var container = document.getElementById('float-notice');
         
         var closedAt = localStorage.getItem(STORAGE_KEY);
         if (!closedAt || (Date.now() - parseInt(closedAt)) > HIDE_DURATION) {
             container.style.display = 'block';
         }
         
-        window.closeFloatingAd = function() {
+        window.closeNotice = function() {
             container.style.display = 'none';
             localStorage.setItem(STORAGE_KEY, Date.now().toString());
         };

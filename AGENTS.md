@@ -12,6 +12,8 @@ Faucetlist.org is a cryptocurrency faucet management system that helps users tra
 
 **Frontend (site/)**
 - `index.php` - Main application page with PHP-based ad rotation and inline JavaScript for UI, auth, and faucet management
+- `ptc.html` - Minimal landing page for PTC traffic (fast-loading, rotating phrases, green theme)
+- `demo.html` - Demo page with 5 preset timers (5/4/3/2/1 min) to showcase functionality
 - `js/auth.js` - Authentication class for JWT-based login via auth.directsponsor.org
 - `admin-ads.html` - Admin interface for managing banner and floating ads
 
@@ -49,6 +51,15 @@ Faucetlist.org is a cryptocurrency faucet management system that helps users tra
 - `auth.js` handles login flow, token validation, and user info
 - Optional for users (guest mode works fine)
 
+### Browser Notifications
+
+- Toggle button (🔔) in auth bar to enable/disable
+- Uses Web Notifications API (no plugin required)
+- Notifies when a faucet timer reaches zero
+- Works in background tabs and minimized browser
+- Preference stored in localStorage (`faucetlist_notify`)
+- Only works while page is open (not when browser closed)
+
 ## Deployment
 
 **Local Development**
@@ -74,8 +85,13 @@ Faucetlist.org is a cryptocurrency faucet management system that helps users tra
 - Ads in `ads.txt` and `ads-floating.txt` are separated by `---` on its own line
 - PHP reads files server-side and picks random ad on each page load
 - Ad content is raw HTML - can contain `<img>`, `<a>`, `<script>` tags
-- Images uploaded via admin go to `/media/` folder (avoids ad-blocker keywords)
+- Images uploaded via admin go to `/media/` folder
 - Admin can upload images, add/edit/delete ads via `admin-ads.html`
+
+### Ad-Blocker Avoidance
+- **Filenames**: Avoid ad dimensions (`728x90`, `300x250`) and keywords (`banner`, `ad`, `advert`). Use neutral names like `feature-green.png`, `partner1.jpg`
+- **Element IDs/classes**: Use neutral names. Current: `top-image` (banner container), `float-notice` (floating ad)
+- **Don't use**: `ad-banner`, `advertisement`, `sponsor`, `promo` in IDs/classes
 
 ### Data Protection Strategy
 - Data files (`data/`) are NOT synced from local - managed entirely on server
@@ -88,7 +104,7 @@ Faucetlist.org is a cryptocurrency faucet management system that helps users tra
 - User session contains `combined_user_id` field used for data file naming
 
 ### Mobile Responsiveness
-- URL column hidden on screens ≤600px
+- Main content has max-width (800px) with centered layout
 - Timer display adapts (shows "✓" on very small screens)
 - Progress bars use responsive sizing with flexbox
 
@@ -118,12 +134,19 @@ Faucetlist.org is a cryptocurrency faucet management system that helps users tra
 - API endpoints validate in `auth-helper.php`
 - Check auth server logs if tokens are rejected
 
+### SSH Access
+- Use `ssh faucetlist-directadmin` (configured in ~/.ssh/config)
+- Key: `~/.ssh/faucetlist_key_rsa`
+- Server path: `/home/faucetlist/domains/faucetlist.org/`
+
 ## File Organization
 
 ```
 faucetlist.org/
 ├── site/                    # Frontend + API
 │   ├── index.php           # Main app with PHP ad rotation
+│   ├── ptc.html            # PTC landing page (minimal, fast)
+│   ├── demo.html           # Demo with preset timers
 │   ├── admin-ads.html      # Ad management interface (upload, add, edit, delete)
 │   ├── favicon.ico         # Root favicon for browser default
 │   ├── api/                # Backend endpoints
@@ -179,7 +202,7 @@ data/                        # Outside web root
 
 ## Future Considerations
 
-- Phase 2: Chrome extension with notifications (separate repo)
+- ~~Phase 2: Chrome extension with notifications~~ Browser notifications now built-in
 - Currently no membership/payment system
 - Ad inventory management could use a database
 - Could implement ad scheduling and A/B testing
