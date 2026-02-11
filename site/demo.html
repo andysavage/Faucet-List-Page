@@ -120,11 +120,11 @@
 
     <script>
         var demoFaucets = [
-            { id: 1, name: 'Useless Coins', timer: 5, last_claim: 0 },
-            { id: 2, name: '4t2 Link Shortener', timer: 4, last_claim: 0 },
-            { id: 3, name: 'Quick Extension Manager', timer: 3, last_claim: 0 },
-            { id: 4, name: 'ROFLFaucet', timer: 2, last_claim: 0 },
-            { id: 5, name: 'LottoFaucet', timer: 1, last_claim: 0 }
+            { id: 1, name: 'Useless Coins', url: 'https://uselesscoin.org/', timer: 5, last_claim: 0 },
+            { id: 2, name: '4t2 Link Shortener', url: 'https://4t2.co/', timer: 4, last_claim: 0 },
+            { id: 3, name: 'Quick Extension Manager', url: 'https://qem.satoshihost.com/', timer: 3, last_claim: 0 },
+            { id: 4, name: 'ROFLFaucet', url: 'https://roflfaucet.com/', timer: 2, last_claim: 0 },
+            { id: 5, name: 'LottoFaucet', url: 'https://lottofaucet.com/', timer: 1, last_claim: 0 }
         ];
 
         function formatTime(seconds) {
@@ -192,7 +192,7 @@
                 row.innerHTML = '<td>' + faucet.name + '</td>' +
                     '<td class="url-col">' + faucet.timer + ' min</td>' +
                     '<td>' + progressHtml + '</td>' +
-                    '<td><button class="button-primary" onclick="claimFaucet(' + faucet.id + ')">Claim</button></td>';
+                    '<td><a href="' + faucet.url + '" target="_blank" class="button-primary" onclick="claimFaucet(' + faucet.id + ')">Claim</a></td>';
                 tbody.appendChild(row);
 
                 if (!isReady) {
