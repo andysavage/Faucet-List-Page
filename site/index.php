@@ -292,7 +292,6 @@ $floatingAd = getRandomAd('ads-floating.txt');
             background: #f7f7f7;
         }
 
-        .menu-dropdown:hover .menu-dropdown-content,
         .menu-dropdown.open .menu-dropdown-content {
             display: block;
         }
@@ -488,7 +487,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
         <div class="auth-buttons">
             <button id="notify-btn" class="button-secondary" title="Enable notifications">🔔 Off</button>
             <div class="menu-dropdown">
-                <button class="button-secondary menu-dropdown-toggle" title="More">⋯</button>
+<button class="button-secondary menu-dropdown-toggle" title="More">???</button>
                 <div class="menu-dropdown-content">
                     <a href="/demo.html">Demo</a>
                     <a href="/about.html">About</a>
