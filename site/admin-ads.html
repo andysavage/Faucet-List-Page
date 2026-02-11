@@ -294,7 +294,7 @@
             <!-- Simple Image Ad Mode -->
             <div id="simple-mode">
                 <div class="form-group">
-                    <label for="banner-file">Banner Image:</label>
+                    <label for="banner-file">Banner Image (upload):</label>
                     <div class="upload-row">
                         <input type="file" id="banner-file" accept="image/jpeg,image/png,image/gif,image/webp">
                         <button type="button" class="button-primary" onclick="uploadBanner()">Upload</button>
@@ -303,6 +303,12 @@
                         <strong>✓ Uploaded:</strong> <span id="uploaded-url"></span>
                     </div>
                 </div>
+                <div class="or-divider" style="text-align: center; margin: 15px 0; color: #888; font-style: italic;">— OR —</div>
+                <div class="form-group">
+                    <label for="image-url">Banner Image (URL):</label>
+                    <input type="url" id="image-url" placeholder="https://example.com/image.png">
+                </div>
+                <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
                 <div class="form-group">
                     <label for="link-url">Link URL (where ad clicks go):</label>
                     <input type="url" id="link-url" placeholder="https://example.com/landing-page">
@@ -461,6 +467,7 @@
             // Reset form fields
             $('#ad-html').val('');
             $('#link-url').val('');
+            $('#image-url').val('');
             $('#upload-result').hide();
             lastUploadedUrl = '';
             // Reset to simple mode
@@ -480,17 +487,18 @@
 
             if (currentMode === 'simple') {
                 // Generate HTML from image URL and link
-                if (!lastUploadedUrl) {
-                    alert('Please upload an image first');
+                const imageUrl = lastUploadedUrl || $('#image-url').val().trim();
+                if (!imageUrl) {
+                    alert('Please upload an image or enter an image URL');
                     return;
                 }
                 const linkUrl = $('#link-url').val().trim();
                 if (linkUrl) {
-                    html = `<a href="${linkUrl}" target="_blank" rel="noopener"><img src="${lastUploadedUrl}" alt="Advertisement" style="max-width:100%;"></a>`;
+                    html = `<a href="${linkUrl}" target="_blank" rel="noopener"><img src="${imageUrl}" alt="Advertisement" style="max-width:100%;"></a>`;
                 } else {
-                    html = `<img src="${lastUploadedUrl}" alt="Advertisement" style="max-width:100%;">`;
+                    html = `<img src="${imageUrl}" alt="Advertisement" style="max-width:100%;">`;
                 }
-            } else {
+            }
                 // Custom code mode
                 html = $('#ad-html').val().trim();
                 if (!html) {
