@@ -199,6 +199,7 @@ data/                        # Outside web root
 - Floating ads use simple timer-based dismissal, not sophisticated frequency capping
 - API endpoints don't validate ad HTML (assumes admin is trusted)
 - No backup system for user data files (manual backup needed)
+- **A-Ads "Adaptive" iframe ads don't scale properly** - Despite being labelled "responsive", they don't respect container sizing consistently. Setting width/height/aspect-ratio on the container or iframe results in blurring, cropping, or incorrect proportions. Static image ads work fine; the issue is specific to A-Ads adaptive iframes. A static version is kept on `/about.html` for A-Ads verification. Consider replacing with our own ads when inventory allows.
 
 ## Future Considerations
 
