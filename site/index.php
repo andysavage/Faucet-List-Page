@@ -499,7 +499,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
     </div>
 
     <div id="top-image"
-        style="text-align:center; margin-bottom: 20px; min-height: 90px; display: flex; justify-content: center; align-items: center;">
+        style="text-align:center; margin: 0 auto 20px auto; min-height: 90px; max-width: 728px; display: flex; justify-content: center; align-items: center;">
         <?php echo $bannerAd; ?>
     </div>
 
