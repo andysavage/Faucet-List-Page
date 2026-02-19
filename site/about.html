@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,41 +20,57 @@
             background: #f5f5f5;
             line-height: 1.6;
         }
-        h1 { margin-bottom: 5px; }
+
+        h1 {
+            margin-bottom: 5px;
+        }
+
         h2 {
             color: #333;
             border-bottom: 2px solid #2ea2cc;
             padding-bottom: 5px;
             margin-top: 30px;
         }
+
         .subtitle {
             color: #666;
             margin-bottom: 20px;
             font-size: 1.1em;
         }
+
         .back-link {
             display: inline-block;
             margin-bottom: 20px;
             color: #2ea2cc;
             text-decoration: none;
         }
-        .back-link:hover { text-decoration: underline; }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
         .feature-section {
             background: #fff;
             padding: 20px;
             margin-bottom: 20px;
             border-radius: 5px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
+
         .feature-section h3 {
             margin-top: 0;
             color: #2ea2cc;
         }
+
         ul {
             margin: 0;
             padding-left: 20px;
         }
-        li { margin-bottom: 8px; }
+
+        li {
+            margin-bottom: 8px;
+        }
+
         .cta {
             margin-top: 30px;
             padding: 20px;
@@ -61,19 +78,83 @@
             border-left: 4px solid #28a745;
             border-radius: 0 5px 5px 0;
         }
+
         .cta a {
             color: #2ea2cc;
             font-weight: bold;
         }
+
         code {
             background: #f0f0f0;
             padding: 2px 6px;
             border-radius: 3px;
             font-size: 0.9em;
         }
+
+        /* Dark mode toggle */
+        .dark-mode-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+            z-index: 1000;
+        }
+
+        .dark-mode-toggle:hover {
+            opacity: 0.7;
+        }
+
+        /* Dark mode styles */
+        body.dark-mode {
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode h1,
+        body.dark-mode h2 {
+            color: #e0e0e0;
+            border-bottom-color: #0073aa;
+        }
+
+        body.dark-mode h3 {
+            color: #4db8e8;
+        }
+
+        body.dark-mode .subtitle {
+            color: #b0b0b0;
+        }
+
+        body.dark-mode .back-link {
+            color: #4db8e8;
+        }
+
+        body.dark-mode .feature-section {
+            background: #2d2d2d;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark-mode .cta {
+            background: #2d4a2d;
+            border-left-color: #4caf50;
+        }
+
+        body.dark-mode .cta a {
+            color: #4db8e8;
+        }
+
+        body.dark-mode code {
+            background: #3a3a3a;
+            color: #e0e0e0;
+        }
     </style>
 </head>
+
 <body>
+    <button id="dark-mode-toggle" class="dark-mode-toggle" title="Toggle dark mode">🌙</button>
     <div id="frame" style="width: 100%; max-width: 728px; margin: auto; position: relative; z-index: 99998;">
         <iframe data-aa='2427210' src='//acceptable.a-ads.com/2427210/?size=Adaptive'
             style='border:0; padding:0; width:100%; aspect-ratio: 728 / 90; overflow:hidden; display: block; margin: auto'></iframe>
@@ -81,7 +162,8 @@
 
     <a href="/" class="back-link">← Back to Faucet List</a>
     <h1>About Faucet List</h1>
-    <p class="subtitle">Keep track of all the sites you visit regularly with personal timers and optional notifications.</p>
+    <p class="subtitle">Keep track of all the sites you visit regularly with personal timers and optional notifications.
+    </p>
 
     <div class="feature-section">
         <h3>🕐 Timer Management</h3>
@@ -128,5 +210,29 @@
         <a href="/">Start tracking your sites</a> – no signup required.<br>
         Or check out the <a href="/demo.html">demo</a> to see how it works.
     </div>
+
+    <script>
+        // Dark mode functionality
+        (function initDarkMode() {
+            var darkModeToggle = document.getElementById('dark-mode-toggle');
+            var body = document.body;
+
+            // Load saved preference
+            var isDarkMode = localStorage.getItem('darkMode') === 'true';
+            if (isDarkMode) {
+                body.classList.add('dark-mode');
+                darkModeToggle.textContent = '☀️';
+            }
+
+            // Toggle dark mode
+            darkModeToggle.addEventListener('click', function () {
+                body.classList.toggle('dark-mode');
+                var isDark = body.classList.contains('dark-mode');
+                localStorage.setItem('darkMode', isDark);
+                darkModeToggle.textContent = isDark ? '☀️' : '🌙';
+            });
+        })();
+    </script>
 </body>
+
 </html>

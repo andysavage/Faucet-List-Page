@@ -194,6 +194,10 @@ $floatingAd = getRandomAd('ads-floating.txt');
         #faucet-table tbody tr {
             background: linear-gradient(to bottom, white, #f7f7f7);
         }
+        
+        body.dark-mode #faucet-table tbody tr {
+            background: linear-gradient(to bottom, #2d2d2d, #252525);
+        }
 
         .main-content {
             max-width: 800px;
@@ -243,6 +247,176 @@ $floatingAd = getRandomAd('ads-floating.txt');
             background: #f7f7f7;
             border-bottom: 1px solid #ddd;
             margin-bottom: 20px;
+        }
+        
+        /* Dark mode styles */
+        body.dark-mode {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .auth-bar {
+            background: #2d2d2d;
+            border-bottom-color: #444;
+        }
+        
+        body.dark-mode .button,
+        body.dark-mode .button-secondary {
+            color: #e0e0e0;
+            border-color: #555;
+            background: #3a3a3a;
+            -webkit-box-shadow: inset 0 1px 0 #555, 0 1px 0 rgba(0, 0, 0, .3);
+            box-shadow: inset 0 1px 0 #555, 0 1px 0 rgba(0, 0, 0, .3);
+        }
+        
+        body.dark-mode .button:hover,
+        body.dark-mode .button-secondary:hover,
+        body.dark-mode .button:focus,
+        body.dark-mode .button-secondary:focus {
+            background: #4a4a4a;
+            border-color: #666;
+            color: #fff;
+        }
+        
+        body.dark-mode .button-primary {
+            background: #0073aa;
+            border-color: #005a87;
+            -webkit-box-shadow: inset 0 1px 0 rgba(0, 150, 220, 0.5), 0 1px 0 rgba(0, 0, 0, .3);
+            box-shadow: inset 0 1px 0 rgba(0, 150, 220, 0.5), 0 1px 0 rgba(0, 0, 0, .3);
+        }
+        
+        body.dark-mode .button-primary:hover {
+            background: #0090d4;
+            border-color: #006ba1;
+        }
+        
+        body.dark-mode h1 {
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode table {
+            border-color: #444;
+        }
+        
+        body.dark-mode #faucet-table th {
+            background: #3a3a3a;
+            color: #e0e0e0;
+            border-color: #555;
+        }
+        
+        body.dark-mode td {
+            border-color: #444;
+        }
+        
+        body.dark-mode .progressBar {
+            background: #3a3a3a;
+            border: 1px solid #555;
+        }
+        
+        body.dark-mode .progress-bar-fill {
+            background: #0073aa;
+        }
+        
+        body.dark-mode .progress-bar-text {
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode details {
+            border-color: #444;
+        }
+        
+        body.dark-mode summary {
+            background: #3a3a3a;
+            border-color: #555;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode summary:hover {
+            background: #4a4a4a;
+        }
+        
+        body.dark-mode .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        
+        body.dark-mode .modal {
+            background-color: #2d2d2d;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .modal h2 {
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .modal-group label {
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .modal-group input {
+            background: #3a3a3a;
+            border-color: #555;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .modal-actions .button-delete {
+            background-color: #c82333;
+            border-color: #bd2130;
+        }
+        
+        body.dark-mode .modal-actions .button-delete:hover {
+            background-color: #a71d2a;
+        }
+        
+        body.dark-mode .menu-dropdown-content {
+            background: #2d2d2d;
+            border-color: #555;
+        }
+        
+        body.dark-mode .menu-dropdown-content a {
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .menu-dropdown-content a:hover {
+            background: #3a3a3a;
+        }
+        
+        body.dark-mode .float-notice {
+            background: #2d2d2d;
+            border-color: #555;
+        }
+        
+        body.dark-mode .float-notice-close {
+            background: #3a3a3a;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .float-notice-close:hover {
+            color: #ff6b6b;
+        }
+        
+        body.dark-mode input[type="text"],
+        body.dark-mode input[type="number"] {
+            background: #3a3a3a;
+            border-color: #555;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode input[type="text"]:focus,
+        body.dark-mode input[type="number"]:focus {
+            border-color: #0073aa;
+        }
+        
+        .dark-mode-toggle {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px;
+            margin-left: 10px;
+        }
+        
+        .dark-mode-toggle:hover {
+            opacity: 0.7;
         }
 
         .auth-info {
@@ -485,6 +659,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
     <div class="auth-bar">
         <div class="auth-info" id="auth-status"></div>
         <div class="auth-buttons">
+            <button id="dark-mode-toggle" class="dark-mode-toggle" title="Toggle dark mode">🌙</button>
             <button id="notify-btn" class="button-secondary" title="Enable notifications">🔔 Off</button>
             <div class="menu-dropdown">
 <button class="button-secondary menu-dropdown-toggle" title="More">???</button>
@@ -814,11 +989,11 @@ $floatingAd = getRandomAd('ads-floating.txt');
                 const session = auth.getSession();
 
                 if (isLoggedIn && session) {
-                    $('#auth-status').text(`Signed in as ${session.username}`);
+                    $('#auth-status').text(session.username);
                     $('#login-btn').hide();
                     $('#logout-btn').show();
                 } else {
-                    $('#auth-status').text('Guest mode - Sign in to sync your data');
+                    $('#auth-status').text('Guest mode');
                     $('#login-btn').show();
                     $('#logout-btn').hide();
                 }
@@ -832,7 +1007,29 @@ $floatingAd = getRandomAd('ads-floating.txt');
                 });
             }
 
+            // Dark mode functionality
+            function initDarkMode() {
+                const darkModeToggle = $('#dark-mode-toggle');
+                const body = $('body');
+                
+                // Load saved preference
+                const isDarkMode = localStorage.getItem('darkMode') === 'true';
+                if (isDarkMode) {
+                    body.addClass('dark-mode');
+                    darkModeToggle.text('☀️');
+                }
+                
+                // Toggle dark mode
+                darkModeToggle.on('click', function() {
+                    body.toggleClass('dark-mode');
+                    const isDark = body.hasClass('dark-mode');
+                    localStorage.setItem('darkMode', isDark);
+                    darkModeToggle.text(isDark ? '☀️' : '🌙');
+                });
+            }
+
             (async function init() {
+                initDarkMode();
                 await renderFaucets();
             })();
 

@@ -37,6 +37,8 @@ set -e  # Exit on error
 
 # Configuration
 REMOTE_HOST="faucetlist-directadmin"
+REMOTE_SCRIPTS_PATH="/home/faucetlist/scripts"
+LOCAL_ANALYTICS_SCRIPT="./analytics.py"
 
 # Colors for output
 RED='\033[0;31m'
@@ -140,11 +142,24 @@ rsync -avz --delete -e "ssh -i ~/.ssh/faucetlist_key_rsa -p 10500" \
     "$LOCAL_SITE_DIR/" \
     "faucetlist@directadmin-de.kxe.io:$REMOTE_SITE_PATH/" || { echo "❌ Site sync failed"; exit 1; }
 
+if [ -f "$LOCAL_ANALYTICS_SCRIPT" ]; then
+    echo ""
+    echo "📊 Syncing analytics parser script..."
+    ssh -i ~/.ssh/faucetlist_key_rsa -p 10500 faucetlist@directadmin-de.kxe.io \
+        "mkdir -p $REMOTE_SCRIPTS_PATH" || { warning "Could not create scripts dir (may already exist)"; }
+    rsync -avz -e "ssh -i ~/.ssh/faucetlist_key_rsa -p 10500" \
+        "$LOCAL_ANALYTICS_SCRIPT" \
+        "faucetlist@directadmin-de.kxe.io:$REMOTE_SCRIPTS_PATH/analytics.py" || { warning "Analytics script sync failed (non-fatal)"; }
+fi
+
 echo ""
 echo "✅ Deployment complete!"
 echo ""
 echo "📋 Summary:"
 echo "   ✓ Site files synced to: $REMOTE_SITE_PATH"
+echo "   ✓ stats.html deployed (analytics dashboard)"
+echo "   ✓ analytics.py synced to: $REMOTE_SCRIPTS_PATH"
 echo "   ✓ Data files managed on server (not synced)"
 echo ""
+echo "📊 First-time analytics setup? See DEPLOYMENT.md for cron job instructions."
 echo "🔍 Verify deployment by visiting: https://faucetlist.org"
