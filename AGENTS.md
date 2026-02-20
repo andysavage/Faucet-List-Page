@@ -16,6 +16,13 @@ Faucetlist.org is a cryptocurrency faucet management system that helps users tra
 - `demo.html` - Demo page with 5 preset timers (5/4/3/2/1 min) to showcase functionality
 - `js/auth.js` - Authentication class for JWT-based login via auth.directsponsor.org
 - `admin-ads.html` - Admin interface for managing banner and floating ads
+- `stats.html` - Privacy-first analytics dashboard (sourced from `web-analytics/` sibling repo)
+
+**Analytics (server-side, not in site/)**
+- `analytics.py` - Log parser (repo root); deployed to `~/scripts/analytics.py` on server by deploy script
+- `run-analytics.sh` - Wrapper script on server that extracts logs from DirectAdmin daily tarballs and runs parser
+- Data written to `public_html/data/analytics/report-YYYY-MM-DD.json` (excluded from deploy --delete)
+- Cron: `10 0 * * *` daily; source of truth and update instructions in `web-analytics/` sibling repo
 
 **Backend API (site/api/)**
 - `faucet-sync.php` - Stores/loads user faucet lists as JSON files (keyed by user_id)

@@ -1,0 +1,17 @@
+# Logger: run before every PHP page request
+php_value auto_prepend_file "/home/faucetlist/domains/faucetlist.org/public_html/logger.php"
+
+# Where to write the raw access log
+SetEnv LOGGER_LOG_FILE /home/faucetlist/logs/access-self.log
+
+# Where analytics.php writes the daily JSON reports
+SetEnv ANALYTICS_DATA /home/faucetlist/domains/faucetlist.org/public_html/data/analytics
+
+# Secret token — change this before deploying
+SetEnv ANALYTICS_TOKEN fl-stats-2026
+
+# Block direct HTTP access to logger and raw log
+<Files "logger.php">
+    Order allow,deny
+    Deny from all
+</Files>

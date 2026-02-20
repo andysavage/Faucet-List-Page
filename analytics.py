@@ -7,6 +7,7 @@ Output: report-YYYY-MM-DD.json in data directory for dashboard consumption
 
 import re
 import json
+import hashlib
 from datetime import datetime, timedelta
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -50,6 +51,10 @@ class DailyAnalyzer:
         if data['method'] not in ['GET', 'HEAD']:
             return None
         
+        # Skip API endpoints
+        if data['path'].startswith('/api/'):
+            return None
+        
         # Skip error responses
         status = int(data['status'])
         if status >= 400:
@@ -63,11 +68,14 @@ class DailyAnalyzer:
             except:
                 return None
         
+        # Strip query string from path
+        clean_path = data['path'].split('?')[0]
+        
         return {
             'ip': data['ip'],
             'timestamp': timestamp,
             'date': timestamp.date(),
-            'path': data['path'],
+            'path': clean_path,
             'status': status,
             'size': 0 if data['size'] == '-' else int(data['size']),
             'referrer': None if data['referrer'] == '-' else data['referrer'],
@@ -139,7 +147,10 @@ class DailyAnalyzer:
             date_str = entry['date'].isoformat()
             stats = daily_stats[date_str]
             
-            stats['visitors'].add(entry['ip'])
+            visitor_token = hashlib.sha256(
+                (entry['ip'] + entry['user_agent'] + date_str).encode()
+            ).hexdigest()
+            stats['visitors'].add(visitor_token)
             stats['pageviews'] += 1
             stats['pages'][entry['path']] += 1
             stats['referrers'][self.clean_referrer(entry['referrer'])] += 1

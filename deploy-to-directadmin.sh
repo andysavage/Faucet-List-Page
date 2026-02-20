@@ -37,8 +37,7 @@ set -e  # Exit on error
 
 # Configuration
 REMOTE_HOST="faucetlist-directadmin"
-REMOTE_SCRIPTS_PATH="/home/faucetlist/scripts"
-LOCAL_ANALYTICS_SCRIPT="./analytics.py"
+REMOTE_LOGS_PATH="/home/faucetlist/logs"
 
 # Colors for output
 RED='\033[0;31m'
@@ -97,6 +96,7 @@ preview_deletions() {
         --exclude='node_modules' \
         --exclude='.DS_Store' \
         --exclude='media/*' \
+        --exclude='data/analytics/' \
         "$LOCAL_SITE_DIR/" \
         "faucetlist@directadmin-de.kxe.io:$REMOTE_SITE_PATH/" 2>/dev/null | grep '^\*deleting' || true)
     
@@ -139,27 +139,26 @@ rsync -avz --delete -e "ssh -i ~/.ssh/faucetlist_key_rsa -p 10500" \
     --exclude='node_modules' \
     --exclude='.DS_Store' \
     --exclude='media/*' \
+    --exclude='data/analytics/' \
     "$LOCAL_SITE_DIR/" \
     "faucetlist@directadmin-de.kxe.io:$REMOTE_SITE_PATH/" || { echo "❌ Site sync failed"; exit 1; }
 
-if [ -f "$LOCAL_ANALYTICS_SCRIPT" ]; then
-    echo ""
-    echo "📊 Syncing analytics parser script..."
-    ssh -i ~/.ssh/faucetlist_key_rsa -p 10500 faucetlist@directadmin-de.kxe.io \
-        "mkdir -p $REMOTE_SCRIPTS_PATH" || { warning "Could not create scripts dir (may already exist)"; }
-    rsync -avz -e "ssh -i ~/.ssh/faucetlist_key_rsa -p 10500" \
-        "$LOCAL_ANALYTICS_SCRIPT" \
-        "faucetlist@directadmin-de.kxe.io:$REMOTE_SCRIPTS_PATH/analytics.py" || { warning "Analytics script sync failed (non-fatal)"; }
-fi
+echo ""
+echo "� Ensuring logs directory exists on server..."
+ssh -i ~/.ssh/faucetlist_key_rsa -p 10500 faucetlist@directadmin-de.kxe.io \
+    "mkdir -p $REMOTE_LOGS_PATH" || { warning "Could not create logs dir (may already exist)"; }
 
 echo ""
 echo "✅ Deployment complete!"
 echo ""
 echo "📋 Summary:"
 echo "   ✓ Site files synced to: $REMOTE_SITE_PATH"
-echo "   ✓ stats.html deployed (analytics dashboard)"
-echo "   ✓ analytics.py synced to: $REMOTE_SCRIPTS_PATH"
+echo "   ✓ stats.html, logger.php, analytics.php deployed"
+echo "   ✓ .htaccess deployed (activates logger)"
+echo "   ✓ Logs directory: $REMOTE_LOGS_PATH"
 echo "   ✓ Data files managed on server (not synced)"
 echo ""
-echo "📊 First-time analytics setup? See DEPLOYMENT.md for cron job instructions."
-echo "🔍 Verify deployment by visiting: https://faucetlist.org"
+echo "📊 Suggested cron jobs (add via DirectAdmin > Cron Jobs):"
+echo "   Every 6 hours : 0 */6 * * *  curl -s 'https://faucetlist.org/refresh.php' > /dev/null"
+echo "   Monthly rotate: 5 0 1 * *    curl -s 'https://faucetlist.org/analytics.php?token=fl-stats-2026&rotate=1' > /dev/null"
+echo "🔍 Verify deployment by visiting: https://faucetlist.org/stats.html"

@@ -2,9 +2,7 @@
 
 ## Current Status
 
-**DirectAdmin Shared Hosting:** SSH key authentication issues with faucetlist account prevent automated deployment via rsync. Manual upload via DirectAdmin file manager works (see Manual Deployment section below).
-
-**Migration Planning:** Consider moving to a VPS with straightforward SSH access for easier deployments.
+**DirectAdmin Shared Hosting:** Automated deployment via rsync working. SSH key authentication confirmed working with `faucetlist-directadmin` alias.
 
 ## Quick Start
 
@@ -140,7 +138,7 @@ and generates small JSON files consumed by a client-side dashboard.
 - **Source of truth**: `web-analytics/` project (sibling repo)
 - **Dashboard**: `site/stats.html` — deployed automatically with every `./deploy-to-directadmin.sh`
 - **Parser**: `analytics.py` (repo root) — also synced to server on every deploy
-- **Data**: `~/data/analytics/report-YYYY-MM-DD.json` files (server-only, never overwritten by deploy)
+- **Data**: `~/domains/faucetlist.org/public_html/data/analytics/report-YYYY-MM-DD.json` files (web-accessible, never overwritten by deploy)
 - **Dashboard URL**: https://faucetlist.org/stats.html
 
 ### One-Time Server Setup (run once after first deploy)
@@ -150,25 +148,25 @@ SSH into the server and create the data directory, then set up the cron job:
 ```bash
 ssh faucetlist-directadmin
 
-# Create analytics data directory (outside web root, already protected)
-mkdir -p ~/data/analytics
+# Create analytics data directory inside web root (stats.html fetches from /data/analytics/)
+mkdir -p ~/domains/faucetlist.org/public_html/data/analytics
 
 # Make parser executable
 chmod +x ~/scripts/analytics.py
 
-# Find the access log path
-ls ~/domains/faucetlist.org/logs/access.log
+# NOTE: DirectAdmin rotates logs into daily tarballs (~/domains/faucetlist.org/logs/Mon-YYYY.tar.gz)
+# There is no live access.log. The run-analytics.sh wrapper handles extraction automatically.
 
-# Test the parser manually
-python3 ~/scripts/analytics.py ~/domains/faucetlist.org/logs/access.log -d ~/data/analytics
+# Test the wrapper manually
+~/scripts/run-analytics.sh
 
 # Check JSON files were created
 ls -lh ~/data/analytics/
 
-# Set up hourly cron (runs at 5 past every hour)
+# Set up daily cron (runs at 00:10, after DA finishes log rotation)
 crontab -e
 # Add this line:
-# 5 * * * * /usr/bin/python3 /home/faucetlist/scripts/analytics.py /home/faucetlist/domains/faucetlist.org/logs/access.log -d /home/faucetlist/data/analytics >> /home/faucetlist/logs/analytics-cron.log 2>&1
+# 10 0 * * * /home/faucetlist/scripts/run-analytics.sh >> /home/faucetlist/logs/analytics-cron.log 2>&1
 ```
 
 ### Updating the Analytics System
@@ -190,6 +188,6 @@ No manual SSH steps needed for updates; the deploy script handles it.
 |------|-------------|
 | Dashboard | `~/domains/faucetlist.org/public_html/stats.html` |
 | Parser | `~/scripts/analytics.py` |
-| JSON data | `~/data/analytics/report-YYYY-MM-DD.json` |
+| JSON data | `~/domains/faucetlist.org/public_html/data/analytics/report-YYYY-MM-DD.json` |
 | Access log | `~/domains/faucetlist.org/logs/access.log` |
 | Cron log | `~/logs/analytics-cron.log` |
