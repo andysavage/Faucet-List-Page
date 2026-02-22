@@ -75,6 +75,17 @@ function parse_line(string $line): ?array
         return null;
     }
 
+    // Skip API endpoints
+    if (strncmp(strtok($path, '?'), '/api/', 5) === 0) {
+        return null;
+    }
+
+    // Skip internal analytics/logger paths
+    $basename = basename(strtok($path, '?'));
+    if (in_array($basename, ['analytics.php', 'refresh.php', 'logger.php'], true)) {
+        return null;
+    }
+
     // Skip static assets — only log page-like paths
     $ext = strtolower(pathinfo(strtok($path, '?'), PATHINFO_EXTENSION));
     $page_exts = ['', 'php', 'html', 'htm'];

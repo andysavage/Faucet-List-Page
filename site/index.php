@@ -606,6 +606,8 @@ $floatingAd = getRandomAd('ads-floating.txt');
     <script>
         var renderFaucets;
         var activeTimers = {}; // Track active timers by faucet ID
+        var animationFrameId = null; // Global animation frame ID
+        var timerStates = {}; // Track timer states with start times
 
         function formatTime(seconds) {
             const mins = Math.floor(seconds / 60);
@@ -626,30 +628,69 @@ $floatingAd = getRandomAd('ads-floating.txt');
         }
 
         function clearAllTimers() {
-            for (var id in activeTimers) {
-                clearTimeout(activeTimers[id]);
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
             }
             activeTimers = {};
+            timerStates = {};
         }
 
         function progress(timeleft, timetotal, $element, faucetId, faucetName) {
-            var progressBarWidth = timeleft * $element.width() / timetotal;
-            var text = formatTime(timeleft);
-            var $fill = $element.find('.progress-bar-fill');
-            var $timeLeft = $element.find('.time-left');
+            // Store timer state
+            timerStates[faucetId] = {
+                startTime: Date.now(),
+                totalTime: timetotal,
+                initialTimeLeft: timeleft,
+                element: $element,
+                name: faucetName
+            };
+            activeTimers[faucetId] = true;
+            
+            // Start global animation loop if not already running
+            if (!animationFrameId) {
+                updateAllTimers();
+            }
+        }
+        
+        function updateAllTimers() {
+            const now = Date.now();
+            let hasActiveTimers = false;
+            
+            for (var faucetId in timerStates) {
+                const state = timerStates[faucetId];
+                const elapsed = (now - state.startTime) / 1000; // Convert to seconds
+                const timeleft = Math.max(0, state.initialTimeLeft - elapsed);
+                
+                if (timeleft > 0) {
+                    hasActiveTimers = true;
+                    updateTimerDisplay(state.element, timeleft, state.totalTime);
+                } else {
+                    // Timer finished
+                    delete activeTimers[faucetId];
+                    delete timerStates[faucetId];
+                    if (state.name) notifyReady(state.name);
+                    renderFaucets();
+                    return; // renderFaucets will restart timers if needed
+                }
+            }
+            
+            if (hasActiveTimers) {
+                animationFrameId = requestAnimationFrame(updateAllTimers);
+            } else {
+                animationFrameId = null;
+            }
+        }
+        
+        function updateTimerDisplay($element, timeleft, timetotal) {
+            const progressBarWidth = timeleft * $element.width() / timetotal;
+            const text = formatTime(timeleft);
+            const $fill = $element.find('.progress-bar-fill');
+            const $timeLeft = $element.find('.time-left');
 
             $timeLeft.html(text);
-            $fill.animate({ width: progressBarWidth }, timeleft === timetotal ? 0 : 1000, 'linear');
-
-            if (timeleft > 0) {
-                activeTimers[faucetId] = setTimeout(function () {
-                    progress(timeleft - 1, timetotal, $element, faucetId, faucetName);
-                }, 1000);
-            } else {
-                delete activeTimers[faucetId];
-                if (faucetName) notifyReady(faucetName);
-                renderFaucets();
-            }
+            // Update width immediately without animation for smoother updates
+            $fill.css('width', progressBarWidth + 'px');
         }
     </script>
     <script src="js/auth.js"></script>
