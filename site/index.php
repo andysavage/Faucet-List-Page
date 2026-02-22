@@ -608,6 +608,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
         var activeTimers = {}; // Track active timers by faucet ID
         var animationFrameId = null; // Global animation frame ID
         var timerStates = {}; // Track timer states with start times
+        var lastUpdateTime = 0; // Track last update time for throttling
 
         function formatTime(seconds) {
             const mins = Math.floor(seconds / 60);
@@ -634,6 +635,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
             }
             activeTimers = {};
             timerStates = {};
+            lastUpdateTime = 0;
         }
 
         function progress(timeleft, timetotal, $element, faucetId, faucetName) {
@@ -655,6 +657,16 @@ $floatingAd = getRandomAd('ads-floating.txt');
         
         function updateAllTimers() {
             const now = Date.now();
+            
+            // Throttle updates to once per second
+            if (now - lastUpdateTime < 1000) {
+                if (animationFrameId) {
+                    animationFrameId = requestAnimationFrame(updateAllTimers);
+                }
+                return;
+            }
+            
+            lastUpdateTime = now;
             let hasActiveTimers = false;
             
             for (var faucetId in timerStates) {
