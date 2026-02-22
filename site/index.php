@@ -611,6 +611,8 @@ $floatingAd = getRandomAd('ads-floating.txt');
         var lastUpdateTime = 0; // Track last update time for throttling
 
         function formatTime(seconds) {
+            // Round to nearest integer to avoid floating point precision issues
+            seconds = Math.round(seconds);
             const mins = Math.floor(seconds / 60);
             let secs = seconds % 60;
             secs = secs < 10 ? '0' + secs : secs;
