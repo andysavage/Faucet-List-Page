@@ -33,7 +33,7 @@
 #
 ################################################################################
 
-set -e  # Exit on error
+# set -e removed - handle errors manually to preserve interactive prompts
 
 # Configuration
 REMOTE_HOST="faucetlist-directadmin"
@@ -126,11 +126,13 @@ trap 'echo ""; echo -e "${RED}❌ Deployment failed or interrupted${NC}"; read -
 
 # Auto-commit any pending changes
 auto_commit_changes
+if [ $? -ne 0 ]; then
+    error_exit "Auto-commit failed"
+fi
 
 # Verify local directories exist
 if [ ! -d "$LOCAL_SITE_DIR" ]; then
-    echo "❌ Error: Local site directory not found: $LOCAL_SITE_DIR"
-    exit 1
+    error_exit "Local site directory not found: $LOCAL_SITE_DIR"
 fi
 
 # Preview any deletions before proceeding
@@ -144,7 +146,11 @@ rsync -avz --delete -e "ssh -i ~/.ssh/faucetlist_key_rsa -p 10500" \
     --exclude='media/*' \
     --exclude='data/analytics/' \
     "$LOCAL_SITE_DIR/" \
-    "faucetlist@directadmin-de.kxe.io:$REMOTE_SITE_PATH/" || { echo "❌ Site sync failed"; exit 1; }
+    "faucetlist@directadmin-de.kxe.io:$REMOTE_SITE_PATH/"
+
+if [ $? -ne 0 ]; then
+    error_exit "Site sync failed"
+fi
 
 echo ""
 echo "� Ensuring logs directory exists on server..."
