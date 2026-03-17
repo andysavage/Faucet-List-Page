@@ -714,8 +714,10 @@ $floatingAd = getRandomAd('ads-floating.txt');
     <div class="auth-bar">
         <div class="auth-info" id="auth-status"></div>
         <div id="auth-error-display" style="color: #c82333; font-weight: bold; display: none; margin: 0 10px;"></div>
-        <div id="guest-warning" style="display: none; margin: 0 10px;">
-            <button id="save-faucets-btn" class="button-secondary" title="Save your faucets before signing up—they will be lost otherwise">⚠️ Guest mode</button>
+        <div id="guest-warning" style="display: none; margin: 0 10px; display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 13px;">Guest mode</span>
+            <button class="button-secondary" title="In guest mode, your faucets are stored locally. They will be lost if you log out or clear your browser data. Sign up to keep them on your account." style="padding: 2px 6px; font-size: 11px; min-width: auto; height: auto; line-height: 1;">?</button>
+            <button id="save-faucets-btn" class="button-secondary" style="font-size: 12px;">Save my faucets</button>
         </div>
         <div class="auth-buttons">
             <button id="dark-mode-toggle" class="dark-mode-toggle" title="Toggle dark mode">🌙</button>
