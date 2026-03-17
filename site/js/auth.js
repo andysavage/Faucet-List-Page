@@ -48,6 +48,8 @@ class AuthSystem {
         localStorage.removeItem('username');
         localStorage.removeItem('user_id');
         localStorage.removeItem('combined_user_id');
+        // Clear faucets on logout so guest mode starts fresh
+        localStorage.removeItem('faucets');
         window.location.reload();
     }
 
@@ -96,10 +98,11 @@ class AuthSystem {
                 localStorage.setItem('user_id', userId);
                 localStorage.setItem('username', username);
                 localStorage.setItem('combined_user_id', combinedUserId);
-                // Flag that we just logged in (for guest data merge check)
-                localStorage.setItem('just_logged_in', 'true');
                 // Clear any previous auth errors
                 localStorage.removeItem('auth_error');
+                // Clear faucets on login so guest data is preserved but separate
+                // (they'll be loaded from server instead)
+                localStorage.removeItem('faucets');
                 const cleanUrl = window.location.pathname;
                 window.history.replaceState({}, document.title, cleanUrl);
                 // Small delay to ensure auth UI updates before reload

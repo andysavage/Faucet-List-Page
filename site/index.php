@@ -714,6 +714,10 @@ $floatingAd = getRandomAd('ads-floating.txt');
     <div class="auth-bar">
         <div class="auth-info" id="auth-status"></div>
         <div id="auth-error-display" style="color: #c82333; font-weight: bold; display: none; margin: 0 10px;"></div>
+        <div id="guest-warning" style="display: none; flex: 1; margin: 0 15px; font-size: 13px;">
+            <span style="color: #d97706;">⚠️ Guest mode</span> – Your faucets will be lost if you sign up without saving them.
+            <button id="save-faucets-btn" class="button-secondary" style="margin-left: 10px; font-size: 12px;">Save for my account</button>
+        </div>
         <div class="auth-buttons">
             <button id="dark-mode-toggle" class="dark-mode-toggle" title="Toggle dark mode">🌙</button>
             <button id="notify-btn" class="button-secondary" title="Enable notifications">🔔 Off</button>
@@ -843,70 +847,6 @@ $floatingAd = getRandomAd('ads-floating.txt');
                         await FaucetCloud.saveFaucets(faucets);
                     }
                 },
-                async checkAndPromptMerge() {
-                    console.log('checkAndPromptMerge called');
-                    // Only show merge if we just logged in
-                    if (localStorage.getItem('just_logged_in') !== 'true') {
-                        console.log('just_logged_in flag not set');
-                        return false;
-                    }
-                    console.log('just_logged_in flag found, removing it');
-                    localStorage.removeItem('just_logged_in');
-                    
-                    // Capture guest data BEFORE it gets overwritten
-                    const guestFaucets = JSON.parse(localStorage.getItem('faucets')) || [];
-                    console.log('Guest faucets:', guestFaucets.length, guestFaucets);
-                    
-                    // Load server faucets
-                    const serverFaucets = await FaucetCloud.loadFaucets() || [];
-                    console.log('Server faucets:', serverFaucets.length, serverFaucets);
-                    
-                    // If no guest faucets, no merge needed
-                    if (guestFaucets.length === 0) {
-                        console.log('No guest faucets, skipping merge');
-                        return false;
-                    }
-                    
-                    // Check if guest has different faucets (compare by URL which is unique)
-                    const serverUrls = new Set(serverFaucets.map(f => f.url));
-                    const guestOnlyExists = guestFaucets.some(g => !serverUrls.has(g.url));
-                    console.log('Guest has unique faucets:', guestOnlyExists);
-                    
-                    // If no unique guest faucets, no merge needed
-                    if (!guestOnlyExists) {
-                        console.log('No unique guest faucets, skipping merge');
-                        return false;
-                    }
-                    
-                    console.log('Showing merge modal');
-                    // Show merge modal
-                    $('#merge-server-count').text(serverFaucets.length);
-                    $('#merge-guest-count').text(guestFaucets.length);
-                    $('#merge-modal-backdrop').css('display', 'flex');
-                    
-                    // Store guest data for merge handlers to use
-                    window.guestFaucetsForMerge = guestFaucets;
-                    window.serverFaucetsForMerge = serverFaucets;
-                    
-                    // Return promise that resolves when user makes a choice
-                    return new Promise((resolve) => {
-                        window.mergeChoice = resolve;
-                    });
-                },
-                mergeFaucets(serverList, guestList) {
-                    // Dedupe by URL first (most reliable), then by name
-                    const merged = [...serverList];
-                    const serverUrls = new Set(serverList.map(f => f.url));
-                    const serverNames = new Set(serverList.map(f => f.name));
-                    
-                    guestList.forEach(guest => {
-                        if (!serverUrls.has(guest.url) && !serverNames.has(guest.name)) {
-                            merged.push(guest);
-                        }
-                    });
-                    
-                    return merged;
-                }
             };
 
             renderFaucets = async function () {
@@ -1159,46 +1099,58 @@ $floatingAd = getRandomAd('ads-floating.txt');
                 });
             }
 
-            // Merge modal button handlers
-            $('#merge-both-btn').on('click', async function() {
-                const serverFaucets = window.serverFaucetsForMerge || [];
-                const guestFaucets = window.guestFaucetsForMerge || [];
-                const merged = FaucetStore.mergeFaucets(serverFaucets, guestFaucets);
-                await FaucetStore.saveFaucets(merged);
-                $('#merge-modal-backdrop').hide();
-                await renderFaucets();
-                if (window.mergeChoice) window.mergeChoice();
+            // Save faucets before signup
+            $('#save-faucets-btn').on('click', function() {
+                const faucets = JSON.parse(localStorage.getItem('faucets')) || [];
+                if (faucets.length > 0) {
+                    // Store faucets in a separate key so they survive logout
+                    localStorage.setItem('faucets_to_import', JSON.stringify(faucets));
+                    auth.login();
+                } else {
+                    alert('No faucets to save');
+                }
             });
             
-            $('#merge-server-only-btn').on('click', async function() {
-                const serverFaucets = window.serverFaucetsForMerge || [];
-                localStorage.setItem('faucets', JSON.stringify(serverFaucets));
-                await FaucetCloud.saveFaucets(serverFaucets);
-                $('#merge-modal-backdrop').hide();
-                await renderFaucets();
-                if (window.mergeChoice) window.mergeChoice();
+            // Import saved faucets after login
+            $('#import-faucets-btn').on('click', async function() {
+                const savedFaucets = JSON.parse(localStorage.getItem('faucets_to_import')) || [];
+                if (savedFaucets.length > 0) {
+                    // Add saved faucets to current account
+                    await FaucetStore.saveFaucets(savedFaucets);
+                    localStorage.removeItem('faucets_to_import');
+                    $('#import-modal-backdrop').hide();
+                    await renderFaucets();
+                }
             });
             
-            $('#merge-guest-only-btn').on('click', async function() {
-                const guestFaucets = window.guestFaucetsForMerge || [];
-                localStorage.setItem('faucets', JSON.stringify(guestFaucets));
-                await FaucetCloud.saveFaucets(guestFaucets);
-                $('#merge-modal-backdrop').hide();
-                await renderFaucets();
-                if (window.mergeChoice) window.mergeChoice();
+            $('#skip-import-btn').on('click', function() {
+                localStorage.removeItem('faucets_to_import');
+                $('#import-modal-backdrop').hide();
             });
 
             (async function init() {
                 initDarkMode();
                 
-                // Check for guest data merge on login
-                const showMerge = await FaucetStore.checkAndPromptMerge();
-                if (showMerge) {
-                    // Modal is shown, handlers will call renderFaucets when done
-                    return;
+                // Check if user just logged in with saved faucets
+                if (auth.isLoggedIn() && localStorage.getItem('faucets_to_import')) {
+                    const savedFaucets = JSON.parse(localStorage.getItem('faucets_to_import')) || [];
+                    if (savedFaucets.length > 0) {
+                        $('#import-faucet-count').text(savedFaucets.length);
+                        $('#import-modal-backdrop').css('display', 'flex');
+                        // Don't render faucets yet, wait for user choice
+                        return;
+                    }
                 }
                 
                 await renderFaucets();
+                
+                // Show guest warning if in guest mode with faucets
+                if (!auth.isLoggedIn()) {
+                    const faucets = JSON.parse(localStorage.getItem('faucets')) || [];
+                    if (faucets.length > 0) {
+                        $('#guest-warning').show();
+                    }
+                }
             })();
 
             let resizeTimer;
@@ -1210,26 +1162,17 @@ $floatingAd = getRandomAd('ads-floating.txt');
             });
         });
     </script>
-    <!-- Merge Guest Data Modal -->
-    <div id="merge-modal-backdrop" class="modal-backdrop">
+    <!-- Import Saved Faucets Modal -->
+    <div id="import-modal-backdrop" class="modal-backdrop">
         <div class="modal">
-            <h2>Unsynced Guest Faucets Found</h2>
-            <p>While you were in <strong>Guest mode</strong>, you added faucets that are saved only on this device. Now that you're signed in, what would you like to do?</p>
-            <div id="merge-info" style="background: #f7f7f7; padding: 10px; border-radius: 3px; margin-bottom: 15px;">
-                <p style="margin: 0; font-size: 14px;">
-                    <strong>Server:</strong> <span id="merge-server-count">0</span> faucets | 
-                    <strong>Guest (unsynced):</strong> <span id="merge-guest-count">0</span> faucets
-                </p>
-            </div>
+            <h2>Import Your Saved Faucets</h2>
+            <p>You saved <strong id="import-faucet-count">0</strong> faucets before signing up. Would you like to add them to your account?</p>
             <div class="modal-actions" style="flex-direction: column; gap: 8px;">
-                <button type="button" id="merge-both-btn" class="button-primary" style="width: 100%; text-align: center; margin-bottom: 8px;">
-                    ✓ Merge Both Lists (Recommended)
+                <button type="button" id="import-faucets-btn" class="button-primary" style="width: 100%; text-align: center; margin-bottom: 8px;">
+                    ✓ Add to my account
                 </button>
-                <button type="button" id="merge-server-only-btn" class="button" style="width: 100%; text-align: center; margin-bottom: 8px;">
-                    Keep Server Only
-                </button>
-                <button type="button" id="merge-guest-only-btn" class="button" style="width: 100%; text-align: center;">
-                    Use Guest List Only
+                <button type="button" id="skip-import-btn" class="button" style="width: 100%; text-align: center;">
+                    No thanks
                 </button>
             </div>
         </div>
