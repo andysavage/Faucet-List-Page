@@ -714,11 +714,6 @@ $floatingAd = getRandomAd('ads-floating.txt');
     <div class="auth-bar">
         <div class="auth-info" id="auth-status"></div>
         <div id="auth-error-display" style="color: #c82333; font-weight: bold; display: none; margin: 0 10px;"></div>
-        <div id="guest-warning" style="display: none; margin: 0 10px; display: flex; align-items: center; gap: 8px;">
-            <span style="font-size: 13px;">Guest mode</span>
-            <button class="button-secondary" title="In guest mode, your faucets are stored locally. They will be lost if you log out or clear your browser data. Sign up to keep them on your account." style="padding: 2px 6px; font-size: 11px; min-width: auto; height: auto; line-height: 1;">?</button>
-            <button id="save-faucets-btn" class="button-secondary" style="font-size: 12px;">Save my faucets</button>
-        </div>
         <div class="auth-buttons">
             <button id="dark-mode-toggle" class="dark-mode-toggle" title="Toggle dark mode">🌙</button>
             <button id="notify-btn" class="button-secondary" title="Enable notifications">🔔 Off</button>
@@ -1070,13 +1065,6 @@ $floatingAd = getRandomAd('ads-floating.txt');
                     }, 10000);
                 }
 
-                $('#login-btn').on('click', function () {
-                    auth.login();
-                });
-
-                $('#logout-btn').on('click', function () {
-                    auth.logout();
-                });
             }
 
             // Dark mode functionality
@@ -1100,16 +1088,19 @@ $floatingAd = getRandomAd('ads-floating.txt');
                 });
             }
 
-            // Save faucets before signup
-            $('#save-faucets-btn').on('click', function() {
+            // Handle login/signup - save guest faucets first
+            function loginWithGuestFaucets() {
                 const faucets = JSON.parse(localStorage.getItem('faucets')) || [];
                 if (faucets.length > 0) {
-                    // Store faucets in a separate key so they survive logout
+                    // Save guest faucets to import after login
                     localStorage.setItem('faucets_to_import', JSON.stringify(faucets));
-                    auth.login();
-                } else {
-                    alert('No faucets to save');
                 }
+                auth.login();
+            }
+            
+            $('#login-btn').off('click').on('click', loginWithGuestFaucets);
+            $('#logout-btn').off('click').on('click', function () {
+                auth.logout();
             });
             
             // Import saved faucets after login
@@ -1131,11 +1122,6 @@ $floatingAd = getRandomAd('ads-floating.txt');
 
             (async function init() {
                 initDarkMode();
-                
-                // Show guest warning immediately in guest mode
-                if (!auth.isLoggedIn()) {
-                    $('#guest-warning').show();
-                }
                 
                 // Check if user just logged in with saved faucets
                 if (auth.isLoggedIn() && localStorage.getItem('faucets_to_import')) {
