@@ -850,12 +850,23 @@ $floatingAd = getRandomAd('ads-floating.txt');
                     }
                     localStorage.removeItem('just_logged_in');
                     
-                    // Load server faucets
-                    const serverFaucets = await FaucetCloud.loadFaucets() || [];
+                    // Capture guest data BEFORE it gets overwritten
                     const guestFaucets = JSON.parse(localStorage.getItem('faucets')) || [];
                     
-                    // If no guest faucets or they match server, no merge needed
-                    if (guestFaucets.length === 0 || JSON.stringify(guestFaucets) === JSON.stringify(serverFaucets)) {
+                    // Load server faucets
+                    const serverFaucets = await FaucetCloud.loadFaucets() || [];
+                    
+                    // If no guest faucets, no merge needed
+                    if (guestFaucets.length === 0) {
+                        return false;
+                    }
+                    
+                    // Check if guest has different faucets (compare by URL which is unique)
+                    const serverUrls = new Set(serverFaucets.map(f => f.url));
+                    const guestOnlyExists = guestFaucets.some(g => !serverUrls.has(g.url));
+                    
+                    // If no unique guest faucets, no merge needed
+                    if (!guestOnlyExists) {
                         return false;
                     }
                     
@@ -863,6 +874,10 @@ $floatingAd = getRandomAd('ads-floating.txt');
                     $('#merge-server-count').text(serverFaucets.length);
                     $('#merge-guest-count').text(guestFaucets.length);
                     $('#merge-modal-backdrop').css('display', 'flex');
+                    
+                    // Store guest data for merge handlers to use
+                    window.guestFaucetsForMerge = guestFaucets;
+                    window.serverFaucetsForMerge = serverFaucets;
                     
                     // Return promise that resolves when user makes a choice
                     return new Promise((resolve) => {
@@ -1137,29 +1152,30 @@ $floatingAd = getRandomAd('ads-floating.txt');
 
             // Merge modal button handlers
             $('#merge-both-btn').on('click', async function() {
-                const serverFaucets = await FaucetCloud.loadFaucets() || [];
-                const guestFaucets = JSON.parse(localStorage.getItem('faucets')) || [];
+                const serverFaucets = window.serverFaucetsForMerge || [];
+                const guestFaucets = window.guestFaucetsForMerge || [];
                 const merged = FaucetStore.mergeFaucets(serverFaucets, guestFaucets);
                 await FaucetStore.saveFaucets(merged);
                 $('#merge-modal-backdrop').hide();
-                renderFaucets();
+                await renderFaucets();
                 if (window.mergeChoice) window.mergeChoice();
             });
             
             $('#merge-server-only-btn').on('click', async function() {
-                const serverFaucets = await FaucetCloud.loadFaucets() || [];
+                const serverFaucets = window.serverFaucetsForMerge || [];
                 localStorage.setItem('faucets', JSON.stringify(serverFaucets));
+                await FaucetCloud.saveFaucets(serverFaucets);
                 $('#merge-modal-backdrop').hide();
-                renderFaucets();
+                await renderFaucets();
                 if (window.mergeChoice) window.mergeChoice();
             });
             
             $('#merge-guest-only-btn').on('click', async function() {
-                // Guest list already in localStorage, just save to server
-                const guestFaucets = JSON.parse(localStorage.getItem('faucets')) || [];
+                const guestFaucets = window.guestFaucetsForMerge || [];
+                localStorage.setItem('faucets', JSON.stringify(guestFaucets));
                 await FaucetCloud.saveFaucets(guestFaucets);
                 $('#merge-modal-backdrop').hide();
-                renderFaucets();
+                await renderFaucets();
                 if (window.mergeChoice) window.mergeChoice();
             });
 
