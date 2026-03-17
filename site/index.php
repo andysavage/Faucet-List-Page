@@ -713,6 +713,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
 <body>
     <div class="auth-bar">
         <div class="auth-info" id="auth-status"></div>
+        <div id="auth-error-display" style="color: #c82333; font-weight: bold; display: none; margin: 0 10px;"></div>
         <div class="auth-buttons">
             <button id="dark-mode-toggle" class="dark-mode-toggle" title="Toggle dark mode">🌙</button>
             <button id="notify-btn" class="button-secondary" title="Enable notifications">🔔 Off</button>
@@ -1082,6 +1083,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
             function updateAuthUI() {
                 const isLoggedIn = auth.isLoggedIn();
                 const session = auth.getSession();
+                const authError = localStorage.getItem('auth_error');
 
                 if (isLoggedIn && session) {
                     $('#auth-status').text(session.username);
@@ -1091,6 +1093,16 @@ $floatingAd = getRandomAd('ads-floating.txt');
                     $('#auth-status').text('Guest mode');
                     $('#login-btn').show();
                     $('#logout-btn').hide();
+                }
+                
+                // Display any auth error
+                if (authError) {
+                    $('#auth-error-display').text(authError).show();
+                    // Auto-clear after 10 seconds
+                    setTimeout(() => {
+                        localStorage.removeItem('auth_error');
+                        $('#auth-error-display').fadeOut();
+                    }, 10000);
                 }
 
                 $('#login-btn').on('click', function () {

@@ -67,6 +67,18 @@ class AuthSystem {
     handleAuthCallback() {
         const urlParams = new URLSearchParams(window.location.search);
         const jwtToken = urlParams.get('jwt');
+        const error = urlParams.get('error');
+        const errorDesc = urlParams.get('error_description');
+        
+        // Log auth errors for display
+        if (error) {
+            const errorMsg = `Auth Error: ${error}${errorDesc ? ' - ' + errorDesc : ''}`;
+            localStorage.setItem('auth_error', errorMsg);
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+            return;
+        }
+        
         if (jwtToken) {
             const payload = this.parseJWT(jwtToken);
             if (payload && payload.sub && payload.username) {
@@ -86,9 +98,16 @@ class AuthSystem {
                 localStorage.setItem('combined_user_id', combinedUserId);
                 // Flag that we just logged in (for guest data merge check)
                 localStorage.setItem('just_logged_in', 'true');
+                // Clear any previous auth errors
+                localStorage.removeItem('auth_error');
                 const cleanUrl = window.location.pathname;
                 window.history.replaceState({}, document.title, cleanUrl);
-                window.location.reload();
+                // Small delay to ensure auth UI updates before reload
+                setTimeout(() => window.location.reload(), 100);
+            } else {
+                localStorage.setItem('auth_error', 'Invalid JWT payload');
+                const cleanUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, cleanUrl);
             }
         }
     }
