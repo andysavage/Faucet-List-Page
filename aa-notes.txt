@@ -1,3 +1,8 @@
-If we put the top banner ad inline with the heading here is what I think will happem. 
 
-If the page is wide enough, the banner will site next to the title, saving vertical space, and when it gets too narrow it will break onto the line below, without us needing to tell it to. Apart from that, everythign else will work the same, like resizing to fit etc. Is that correct?
+==================================================
+
+It's possible to be logged out and still have your sites show from the local storage I think. So soeone could get logged out and then in guest mode add to their sites, not realizing they are logged out. Not sure how to improve this, but here it is as a note for future ref. 
+
+===================================================
+
+

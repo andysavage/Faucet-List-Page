@@ -841,6 +841,46 @@ $floatingAd = getRandomAd('ads-floating.txt');
                     if (auth.isLoggedIn()) {
                         await FaucetCloud.saveFaucets(faucets);
                     }
+                },
+                async checkAndPromptMerge() {
+                    // Only show merge if we just logged in
+                    if (localStorage.getItem('just_logged_in') !== 'true') {
+                        return false;
+                    }
+                    localStorage.removeItem('just_logged_in');
+                    
+                    // Load server faucets
+                    const serverFaucets = await FaucetCloud.loadFaucets() || [];
+                    const guestFaucets = JSON.parse(localStorage.getItem('faucets')) || [];
+                    
+                    // If no guest faucets or they match server, no merge needed
+                    if (guestFaucets.length === 0 || JSON.stringify(guestFaucets) === JSON.stringify(serverFaucets)) {
+                        return false;
+                    }
+                    
+                    // Show merge modal
+                    $('#merge-server-count').text(serverFaucets.length);
+                    $('#merge-guest-count').text(guestFaucets.length);
+                    $('#merge-modal-backdrop').css('display', 'flex');
+                    
+                    // Return promise that resolves when user makes a choice
+                    return new Promise((resolve) => {
+                        window.mergeChoice = resolve;
+                    });
+                },
+                mergeFaucets(serverList, guestList) {
+                    // Dedupe by URL first (most reliable), then by name
+                    const merged = [...serverList];
+                    const serverUrls = new Set(serverList.map(f => f.url));
+                    const serverNames = new Set(serverList.map(f => f.name));
+                    
+                    guestList.forEach(guest => {
+                        if (!serverUrls.has(guest.url) && !serverNames.has(guest.name)) {
+                            merged.push(guest);
+                        }
+                    });
+                    
+                    return merged;
                 }
             };
 
@@ -1083,8 +1123,44 @@ $floatingAd = getRandomAd('ads-floating.txt');
                 });
             }
 
+            // Merge modal button handlers
+            $('#merge-both-btn').on('click', async function() {
+                const serverFaucets = await FaucetCloud.loadFaucets() || [];
+                const guestFaucets = JSON.parse(localStorage.getItem('faucets')) || [];
+                const merged = FaucetStore.mergeFaucets(serverFaucets, guestFaucets);
+                await FaucetStore.saveFaucets(merged);
+                $('#merge-modal-backdrop').hide();
+                renderFaucets();
+                if (window.mergeChoice) window.mergeChoice();
+            });
+            
+            $('#merge-server-only-btn').on('click', async function() {
+                const serverFaucets = await FaucetCloud.loadFaucets() || [];
+                localStorage.setItem('faucets', JSON.stringify(serverFaucets));
+                $('#merge-modal-backdrop').hide();
+                renderFaucets();
+                if (window.mergeChoice) window.mergeChoice();
+            });
+            
+            $('#merge-guest-only-btn').on('click', async function() {
+                // Guest list already in localStorage, just save to server
+                const guestFaucets = JSON.parse(localStorage.getItem('faucets')) || [];
+                await FaucetCloud.saveFaucets(guestFaucets);
+                $('#merge-modal-backdrop').hide();
+                renderFaucets();
+                if (window.mergeChoice) window.mergeChoice();
+            });
+
             (async function init() {
                 initDarkMode();
+                
+                // Check for guest data merge on login
+                const showMerge = await FaucetStore.checkAndPromptMerge();
+                if (showMerge) {
+                    // Modal is shown, handlers will call renderFaucets when done
+                    return;
+                }
+                
                 await renderFaucets();
             })();
 
@@ -1097,6 +1173,31 @@ $floatingAd = getRandomAd('ads-floating.txt');
             });
         });
     </script>
+    <!-- Merge Guest Data Modal -->
+    <div id="merge-modal-backdrop" class="modal-backdrop">
+        <div class="modal">
+            <h2>Unsynced Guest Faucets Found</h2>
+            <p>While you were in <strong>Guest mode</strong>, you added faucets that are saved only on this device. Now that you're signed in, what would you like to do?</p>
+            <div id="merge-info" style="background: #f7f7f7; padding: 10px; border-radius: 3px; margin-bottom: 15px;">
+                <p style="margin: 0; font-size: 14px;">
+                    <strong>Server:</strong> <span id="merge-server-count">0</span> faucets | 
+                    <strong>Guest (unsynced):</strong> <span id="merge-guest-count">0</span> faucets
+                </p>
+            </div>
+            <div class="modal-actions" style="flex-direction: column; gap: 8px;">
+                <button type="button" id="merge-both-btn" class="button-primary" style="width: 100%; text-align: center; margin-bottom: 8px;">
+                    ✓ Merge Both Lists (Recommended)
+                </button>
+                <button type="button" id="merge-server-only-btn" class="button" style="width: 100%; text-align: center; margin-bottom: 8px;">
+                    Keep Server Only
+                </button>
+                <button type="button" id="merge-guest-only-btn" class="button" style="width: 100%; text-align: center;">
+                    Use Guest List Only
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div id="edit-modal-backdrop" class="modal-backdrop">
         <div class="modal">
             <h2>Edit Faucet</h2>

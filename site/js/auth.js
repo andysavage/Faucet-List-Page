@@ -84,6 +84,8 @@ class AuthSystem {
                 localStorage.setItem('user_id', userId);
                 localStorage.setItem('username', username);
                 localStorage.setItem('combined_user_id', combinedUserId);
+                // Flag that we just logged in (for guest data merge check)
+                localStorage.setItem('just_logged_in', 'true');
                 const cleanUrl = window.location.pathname;
                 window.history.replaceState({}, document.title, cleanUrl);
                 window.location.reload();

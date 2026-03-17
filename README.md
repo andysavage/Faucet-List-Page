@@ -5,7 +5,7 @@ A cryptocurrency faucet management system that helps you track and claim from cr
 ## Current Features (Phase 1 - Website)
 
 *   **Add and Remove Faucets:** Easily add your favorite faucets with their name, URL, and a claim timer in minutes.
-*   **Automatic Timers:** Each faucet has a countdown timer that shows when it's ready to be claimed again.
+*   **Automatic Timers:** Each faucet has a countdown timer that shows when it's ready to be claimed again. Timers use real-time calculations and remain accurate even in background tabs or when the browser is minimized.
 *   **Guest Mode:** Your faucet list is saved in your browser's `localStorage`, so it persists between sessions on the same device and browser.
 *   **Optional Account Sync:** Sign in to sync your faucet list across devices and browsers.
 *   **Mobile Responsive:** Optimized for small screens - URL column hides on mobile, compact timer display.
@@ -20,7 +20,7 @@ A cryptocurrency faucet management system that helps you track and claim from cr
 - Chrome extension (future)
 
 ### Phase 2: Chrome Extension (Future)
-- Browser notifications when faucets are ready
+- ~~Browser notifications when faucets are ready~~ ✅ **Now built into the website**
 - Small popup showing ready sites
 - Works standalone or syncs with web account
 - Easy on/off switch for notifications

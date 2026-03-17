@@ -67,6 +67,15 @@ Faucetlist.org is a cryptocurrency faucet management system that helps users tra
 - Preference stored in localStorage (`faucetlist_notify`)
 - Only works while page is open (not when browser closed)
 
+### Timer System
+
+- **Real-time calculations** - Uses `Date.now()` timestamps for accurate time tracking
+- **Background tab immunity** - Timers remain accurate even when browser throttles background tabs
+- **Single animation loop** - All timers share one `requestAnimationFrame` loop for efficiency
+- **Throttled updates** - Display updates once per second for normal countdown speed
+- **Clean display** - Rounds seconds to eliminate floating-point precision errors
+- **Implementation**: Replaced `setTimeout` intervals with real-time elapsed time calculations
+
 ## Deployment
 
 **Local Development**
@@ -115,6 +124,23 @@ Faucetlist.org is a cryptocurrency faucet management system that helps users tra
 - Timer display adapts (shows "✓" on very small screens)
 - Progress bars use responsive sizing with flexbox
 
+### Timer Implementation Details
+
+**Problem Solved:** Browser throttling of `setTimeout` in background tabs caused inaccurate countdowns.
+
+**Solution Architecture:**
+- `timerStates` object stores start time and initial time left for each faucet
+- `updateAllTimers()` function runs via `requestAnimationFrame` with throttling
+- Real-time calculation: `timeleft = initialTimeLeft - elapsed`
+- Display updates limited to once per second via `lastUpdateTime` tracking
+- `formatTime()` rounds seconds to eliminate floating-point precision errors
+
+**Key Functions:**
+- `progress()` - Initializes timer state and starts animation loop
+- `updateAllTimers()` - Main animation loop with throttling
+- `updateTimerDisplay()` - Updates progress bar and time display
+- `clearAllTimers()` - Cleans up all active timers and animation frame
+
 ## Common Tasks
 
 ### Testing the Ad System
@@ -135,11 +161,12 @@ Faucetlist.org is a cryptocurrency faucet management system that helps users tra
 3. Check server: `ssh directsponsor-net`, look for JSON file in `data/faucetlist/`
 4. Reload page - should load from server
 
-### Debugging Auth Issues
-- Check localStorage for `auth_session` key
-- Check `js/auth.js` for session validation logic
-- API endpoints validate in `auth-helper.php`
-- Check auth server logs if tokens are rejected
+### Testing Timer Accuracy
+1. Add a faucet with a timer (e.g., 5 minutes)
+2. Click "Claim" to start the countdown
+3. Switch to other tabs or minimize browser for several minutes
+4. Return to verify timer shows correct remaining time (should be accurate)
+5. Test notifications by enabling 🔔 and waiting for timer to complete
 
 ### SSH Access
 - Use `ssh faucetlist-directadmin` (configured in ~/.ssh/config)
