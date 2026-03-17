@@ -844,32 +844,41 @@ $floatingAd = getRandomAd('ads-floating.txt');
                     }
                 },
                 async checkAndPromptMerge() {
+                    console.log('checkAndPromptMerge called');
                     // Only show merge if we just logged in
                     if (localStorage.getItem('just_logged_in') !== 'true') {
+                        console.log('just_logged_in flag not set');
                         return false;
                     }
+                    console.log('just_logged_in flag found, removing it');
                     localStorage.removeItem('just_logged_in');
                     
                     // Capture guest data BEFORE it gets overwritten
                     const guestFaucets = JSON.parse(localStorage.getItem('faucets')) || [];
+                    console.log('Guest faucets:', guestFaucets.length, guestFaucets);
                     
                     // Load server faucets
                     const serverFaucets = await FaucetCloud.loadFaucets() || [];
+                    console.log('Server faucets:', serverFaucets.length, serverFaucets);
                     
                     // If no guest faucets, no merge needed
                     if (guestFaucets.length === 0) {
+                        console.log('No guest faucets, skipping merge');
                         return false;
                     }
                     
                     // Check if guest has different faucets (compare by URL which is unique)
                     const serverUrls = new Set(serverFaucets.map(f => f.url));
                     const guestOnlyExists = guestFaucets.some(g => !serverUrls.has(g.url));
+                    console.log('Guest has unique faucets:', guestOnlyExists);
                     
                     // If no unique guest faucets, no merge needed
                     if (!guestOnlyExists) {
+                        console.log('No unique guest faucets, skipping merge');
                         return false;
                     }
                     
+                    console.log('Showing merge modal');
                     // Show merge modal
                     $('#merge-server-count').text(serverFaucets.length);
                     $('#merge-guest-count').text(guestFaucets.length);
