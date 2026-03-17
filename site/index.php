@@ -714,9 +714,8 @@ $floatingAd = getRandomAd('ads-floating.txt');
     <div class="auth-bar">
         <div class="auth-info" id="auth-status"></div>
         <div id="auth-error-display" style="color: #c82333; font-weight: bold; display: none; margin: 0 10px;"></div>
-        <div id="guest-warning" style="display: none; flex: 1; margin: 0 15px; font-size: 13px;">
-            <span style="color: #d97706;">⚠️ Guest mode</span> – Your faucets will be lost if you sign up without saving them.
-            <button id="save-faucets-btn" class="button-secondary" style="margin-left: 10px; font-size: 12px;">Save for my account</button>
+        <div id="guest-warning" style="display: none; margin: 0 10px;">
+            <button id="save-faucets-btn" class="button-secondary" title="Save your faucets before signing up—they will be lost otherwise">⚠️ Guest mode</button>
         </div>
         <div class="auth-buttons">
             <button id="dark-mode-toggle" class="dark-mode-toggle" title="Toggle dark mode">🌙</button>
@@ -1131,6 +1130,11 @@ $floatingAd = getRandomAd('ads-floating.txt');
             (async function init() {
                 initDarkMode();
                 
+                // Show guest warning immediately in guest mode
+                if (!auth.isLoggedIn()) {
+                    $('#guest-warning').show();
+                }
+                
                 // Check if user just logged in with saved faucets
                 if (auth.isLoggedIn() && localStorage.getItem('faucets_to_import')) {
                     const savedFaucets = JSON.parse(localStorage.getItem('faucets_to_import')) || [];
@@ -1143,14 +1147,6 @@ $floatingAd = getRandomAd('ads-floating.txt');
                 }
                 
                 await renderFaucets();
-                
-                // Show guest warning if in guest mode with faucets
-                if (!auth.isLoggedIn()) {
-                    const faucets = JSON.parse(localStorage.getItem('faucets')) || [];
-                    if (faucets.length > 0) {
-                        $('#guest-warning').show();
-                    }
-                }
             })();
 
             let resizeTimer;
