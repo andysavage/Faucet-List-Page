@@ -121,6 +121,9 @@ echo "🚀 Deploying faucetlist.org to DirectAdmin server..."
 echo "   Remote: $REMOTE_HOST"
 echo ""
 
+# Trap errors and pause before exit
+trap 'echo ""; echo -e "${RED}❌ Deployment failed or interrupted${NC}"; read -rp "Press Enter to close..."; exit 1' ERR INT TERM
+
 # Auto-commit any pending changes
 auto_commit_changes
 
