@@ -1107,8 +1107,19 @@ $floatingAd = getRandomAd('ads-floating.txt');
             $('#import-faucets-btn').on('click', async function() {
                 const savedFaucets = JSON.parse(localStorage.getItem('faucets_to_import')) || [];
                 if (savedFaucets.length > 0) {
-                    // Add saved faucets to current account
-                    await FaucetStore.saveFaucets(savedFaucets);
+                    // Load existing server faucets and merge with saved ones
+                    const serverFaucets = await FaucetCloud.loadFaucets() || [];
+                    const merged = [...serverFaucets];
+                    const serverUrls = new Set(serverFaucets.map(f => f.url));
+                    
+                    // Add saved faucets that don't already exist
+                    savedFaucets.forEach(saved => {
+                        if (!serverUrls.has(saved.url)) {
+                            merged.push(saved);
+                        }
+                    });
+                    
+                    await FaucetStore.saveFaucets(merged);
                     localStorage.removeItem('faucets_to_import');
                     $('#import-modal-backdrop').hide();
                     await renderFaucets();
