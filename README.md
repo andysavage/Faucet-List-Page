@@ -1,5 +1,9 @@
 # Faucet List with Timers
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/andysavage/Faucet-List-Page)
+
+**Live site: [faucetlist.org](https://directsponsor.github.io/Faucet-List-Page/)**
+
 A cryptocurrency faucet management system that helps you track and claim from crypto earning sites. Currently a standalone web application with plans for a Chrome extension.
 
 ## Current Features (Phase 1 - Website)
