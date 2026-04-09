@@ -16,6 +16,17 @@
             --bar-bg:  #21262d;
         }
 
+        :root.light {
+            --bg:      #f6f8fa;
+            --surface: #ffffff;
+            --border:  #d0d7de;
+            --text:    #1f2328;
+            --muted:   #656d76;
+            --accent:  #0969da;
+            --accent2: #1a7f37;
+            --bar-bg:  #eaeef2;
+        }
+
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
@@ -73,6 +84,36 @@
 
         .loading { color: var(--accent); font-size: 0.85rem; align-self: center; }
         .loading[hidden] { display: none; }
+
+        /* ── Theme toggle ── */
+        .theme-toggle {
+            margin-left: auto;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            padding: 0.35rem 0.7rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-family: inherit;
+            transition: border-color 0.15s;
+        }
+        .theme-toggle:hover { border-color: var(--accent); color: var(--text); }
+
+        /* ── Refresh button ── */
+        .refresh-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            padding: 0.35rem 0.7rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-family: inherit;
+            transition: border-color 0.15s;
+        }
+        .refresh-btn:hover { border-color: var(--accent); color: var(--text); }
+        .refresh-btn[hidden] { display: none; }
 
         /* ── Month picker row ── */
         .history-row {
@@ -279,15 +320,16 @@
     <div class="controls">
         <button class="btn" id="prevBtn">&#8592; Prev</button>
         <div class="period-group">
-            <button class="btn active" data-period="day">Day</button>
+            <button class="btn" data-period="day">Day</button>
             <button class="btn" data-period="week">Week</button>
-            <button class="btn" data-period="month">Month</button>
+            <button class="btn active" data-period="month">Month</button>
         </div>
         <button class="btn" id="nextBtn">Next &#8594;</button>
         <span class="date-label" id="dateLabel"></span>
         <span class="loading" id="loading" hidden>Loading&#8230;</span>
-        <button class="btn" id="refreshBtn" style="margin-left:auto" title="Re-parse the access log and update reports">&#8635; Refresh</button>
+        <button class="refresh-btn" id="refreshBtn" hidden title="Re-parse the access log and update reports">&#8635; Refresh</button>
         <span class="loading" id="refreshing" hidden>Refreshing&#8230;</span>
+        <button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode">&#9788; Light</button>
     </div>
 
     <div class="history-row">
@@ -336,24 +378,50 @@
 (function () {
     'use strict';
 
-    /* ── Config: edit these two lines per deployment ── */
-    var SITE_NAME = 'faucetlist.org';
-    var DATA_PATH = 'data/analytics';
+    /* ══════════════════════════════════════════════════════════════════════════
+       CONFIGURATION — Edit these values for each deployment
+       ══════════════════════════════════════════════════════════════════════════ */
+    var CONFIG = {
+        SITE_NAME: 'faucetlist.org',       /* Display name in header */
+        DATA_PATH: 'data/analytics',       /* Path to JSON reports relative to this file */
+        ENABLE_REFRESH: true               /* Show refresh button (requires refresh.php) */
+    };
+    /* ══════════════════════════════════════════════════════════════════════════ */
 
     /* ── State ── */
-    var period  = 'day';
+    var period  = 'month';
     var refDate = today();
     var cache   = {};
     var allDates = [];   /* populated from index.json */
 
     /* ── Boot ── */
-    document.getElementById('siteTitle').textContent = SITE_NAME + ' — Analytics';
-    document.title = SITE_NAME + ' Analytics';
+    document.getElementById('siteTitle').textContent = CONFIG.SITE_NAME + ' — Analytics';
+    document.title = CONFIG.SITE_NAME + ' Analytics';
+
+    /* Show refresh button if enabled */
+    if (CONFIG.ENABLE_REFRESH) {
+        document.getElementById('refreshBtn').hidden = false;
+    }
+
+    /* ── Theme ── */
+    var root = document.documentElement;
+    function applyTheme(light) {
+        root.classList.toggle('light', light);
+        document.getElementById('themeToggle').textContent = light ? '\u263D Dark' : '\u2600 Light';
+    }
+    var savedTheme = localStorage.getItem('analytics_theme');
+    applyTheme(savedTheme === 'light');
+    document.getElementById('themeToggle').addEventListener('click', function () {
+        var isLight = root.classList.toggle('light');
+        localStorage.setItem('analytics_theme', isLight ? 'light' : 'dark');
+        this.textContent = isLight ? '\u263D Dark' : '\u2600 Light';
+    });
 
     loadIndex().then(function () {
         load();
     });
 
+    /* ── Refresh button ── */
     document.getElementById('refreshBtn').addEventListener('click', function () {
         var btn  = this;
         var spin = document.getElementById('refreshing');
@@ -420,7 +488,7 @@
 
     /* ── Load index.json ── */
     function loadIndex() {
-        return fetch(DATA_PATH + '/index.json')
+        return fetch(CONFIG.DATA_PATH + '/index.json')
             .then(function (r) { return r.ok ? r.json() : []; })
             .then(function (dates) {
                 allDates = Array.isArray(dates) ? dates : [];
@@ -492,7 +560,7 @@
     }
 
     function fetchReport(dateStr) {
-        return fetch(DATA_PATH + '/report-' + dateStr + '.json')
+        return fetch(CONFIG.DATA_PATH + '/report-' + dateStr + '.json')
             .then(function (r) { return r.ok ? r.json() : null; })
             .then(function (data) { if (data) cache[dateStr] = data; })
             .catch(function () {});
@@ -574,9 +642,17 @@
         }).join('');
     }
 
-    /* ── Date helpers ── */
+    /* ── Date helpers (using local timezone) ── */
     function today() {
-        return new Date().toISOString().slice(0, 10);
+        var d = new Date();
+        return localDateStr(d);
+    }
+
+    function localDateStr(dt) {
+        var y   = dt.getFullYear();
+        var m   = String(dt.getMonth() + 1).padStart(2, '0');
+        var day = String(dt.getDate()).padStart(2, '0');
+        return y + '-' + m + '-' + day;
     }
 
     function periodStart(d) {
@@ -586,7 +662,7 @@
         } else if (period === 'month') {
             dt.setDate(1);
         }
-        return dt.toISOString().slice(0, 10);
+        return localDateStr(dt);
     }
 
     function periodEnd(d) {
@@ -597,7 +673,7 @@
             dt.setMonth(dt.getMonth() + 1);
             dt.setDate(0);
         }
-        return dt.toISOString().slice(0, 10);
+        return localDateStr(dt);
     }
 
     function shiftDate(d, dir) {
@@ -605,7 +681,7 @@
         if (period === 'day')   dt.setDate(dt.getDate() + dir);
         if (period === 'week')  dt.setDate(dt.getDate() + dir * 7);
         if (period === 'month') dt.setMonth(dt.getMonth() + dir);
-        return dt.toISOString().slice(0, 10);
+        return localDateStr(dt);
     }
 
     function datesInRange(start, end) {
@@ -613,7 +689,7 @@
         var cur   = new Date(start + 'T00:00:00');
         var last  = new Date(end   + 'T00:00:00');
         while (cur <= last) {
-            dates.push(cur.toISOString().slice(0, 10));
+            dates.push(localDateStr(cur));
             cur.setDate(cur.getDate() + 1);
         }
         return dates;

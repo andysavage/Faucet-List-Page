@@ -1,7 +1,9 @@
 
 ==================================================
 
-It's possible to be logged out and still have your sites show from the local storage I think. So soeone could get logged out and then in guest mode add to their sites, not realizing they are logged out. Not sure how to improve this, but here it is as a note for future ref. 
+The stats page for this site seems to be stuck in dark mode. 
+
+Also I am losing track of things due to having so many sites! 
 
 ===================================================
 
