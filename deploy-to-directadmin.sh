@@ -91,7 +91,7 @@ preview_deletions() {
     
     local deletions
     deletions=$(rsync -avzn --delete --itemize-changes \
-        -e "ssh -i ~/.ssh/faucetlist_key_rsa -p 10500" \
+        -e "ssh -p 10500" \
         --exclude='.git' \
         --exclude='node_modules' \
         --exclude='.DS_Store' \
@@ -139,7 +139,7 @@ fi
 preview_deletions
 
 echo "📁 Syncing site files (html, js, css, api)..."
-rsync -avz --delete -e "ssh -i ~/.ssh/faucetlist_key_rsa -p 10500" \
+rsync -avz --delete -e "ssh -p 10500" \
     --exclude='.git' \
     --exclude='node_modules' \
     --exclude='.DS_Store' \
@@ -154,7 +154,7 @@ fi
 
 echo ""
 echo "� Ensuring logs directory exists on server..."
-ssh -i ~/.ssh/faucetlist_key_rsa -p 10500 faucetlist@directadmin-de.kxe.io \
+ssh -p 10500 faucetlist@directadmin-de.kxe.io \
     "mkdir -p $REMOTE_LOGS_PATH" || { warning "Could not create logs dir (may already exist)"; }
 
 echo ""
