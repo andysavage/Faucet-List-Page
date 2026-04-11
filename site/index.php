@@ -601,6 +601,95 @@ $floatingAd = getRandomAd('ads-floating.txt');
             max-width: 100%;
             border-radius: 7px;
         }
+        
+        /* Welcome Section Styles */
+        .welcome-section {
+            text-align: center;
+            padding: 30px 20px;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+        
+        body.dark-mode .welcome-section {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            border-color: #4a5568;
+        }
+        
+        .welcome-description {
+            font-size: 16px;
+            color: #495057;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        
+        body.dark-mode .welcome-description {
+            color: #cbd5e0;
+        }
+        
+        .welcome-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .welcome-button {
+            padding: 12px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .welcome-button-demo {
+            background: #28a745;
+            color: white;
+            border: 1px solid #28a745;
+        }
+        
+        .welcome-button-demo:hover {
+            background: #218838;
+            border-color: #1e7e34;
+            text-decoration: none;
+            color: white;
+        }
+        
+        .welcome-button-about {
+            background: #6c757d;
+            color: white;
+            border: 1px solid #6c757d;
+        }
+        
+        .welcome-button-about:hover {
+            background: #5a6268;
+            border-color: #545b62;
+            text-decoration: none;
+            color: white;
+        }
+        
+        @media screen and (max-width: 600px) {
+            .welcome-section {
+                padding: 20px 15px;
+                margin-bottom: 20px;
+            }
+            
+            .welcome-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .welcome-button {
+                width: 100%;
+                max-width: 250px;
+                justify-content: center;
+            }
+        }
     </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
@@ -737,6 +826,20 @@ $floatingAd = getRandomAd('ads-floating.txt');
     <div class="main-content">
         <h1>Faucet List</h1>
 
+        <div id="welcome-section" class="welcome-section" style="display: none;">
+            <div class="welcome-description">
+                Track your cryptocurrency faucets with automatic timers that stay accurate even when you switch tabs.
+            </div>
+            <div class="welcome-buttons">
+                <a href="/demo.html" class="welcome-button welcome-button-demo">
+                    <span>Try Demo</span>
+                </a>
+                <a href="/about.html" class="welcome-button welcome-button-about">
+                    <span>Learn More</span>
+                </a>
+            </div>
+        </div>
+
         <details>
             <summary>Add New Faucet</summary>
             <form id="add-faucet-form">
@@ -852,6 +955,14 @@ $floatingAd = getRandomAd('ads-floating.txt');
                 let faucets = await FaucetStore.getFaucets();
                 const tableBody = $('#faucet-table tbody');
                 tableBody.empty();
+
+                // Show/hide welcome section based on faucet count
+                const $welcomeSection = $('#welcome-section');
+                if (faucets.length === 0) {
+                    $welcomeSection.show();
+                } else {
+                    $welcomeSection.hide();
+                }
 
                 faucets.sort((a, b) => {
                     const now = Math.floor(Date.now() / 1000);
