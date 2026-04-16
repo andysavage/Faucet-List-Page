@@ -97,6 +97,27 @@ Faucetlist.org is a cryptocurrency faucet management system that helps users tra
 
 ## Important Implementation Details
 
+### Social Media / Open Graph
+
+All public pages (`index.php`, `about.html`, `demo.html`, `ptc.html`) have Open Graph and Twitter Card meta tags for good social share previews.
+
+The `og:image` / `twitter:image` points to a self-hosted file `og-image.png` in the site root. This was generated once via **ogcdn.net** using a saved template (1200×630px, background image overlaid with title, description and CTA text) and downloaded for self-hosting.
+
+**Template details:**
+- Service: https://www.opengraph.xyz (CDN: ogcdn.net)
+- Template name: *Faucet List Clean Tech*
+- Template ID: `c8bcadb7-7584-47bf-925f-627236ae1f7d`
+- Version: `2`
+- Background image: `https://faucetlist.org/faucetlist.png`
+- Logo: `https://faucetlist.org/favicons/favicon.svg`
+
+**URL pattern** (all values must be URL-encoded):
+```
+https://ogcdn.net/c8bcadb7-7584-47bf-925f-627236ae1f7d/v2/{imageUrl}/{logoUrl}/{titleText}/{descriptionText}/{ctaText}/og.png
+```
+
+To regenerate `og-image.png` (e.g. if you change the background image or text), use the URL pattern above with updated encoded values, download the result, save it as `site/og-image.png`, and redeploy.
+
 ### Ad System
 - Ads in `ads.txt` and `ads-floating.txt` are separated by `---` on its own line
 - PHP reads files server-side and picks random ad on each page load
