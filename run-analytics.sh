@@ -2,7 +2,7 @@
 # run-analytics.sh
 # Extracts faucetlist.org Apache logs from DirectAdmin tarballs and runs analytics parser.
 # DirectAdmin rotates logs daily into ~/domains/faucetlist.org/logs/Mon-YYYY.tar.gz files.
-# Run via cron: 5 * * * * /home/faucetlist/scripts/run-analytics.sh
+# Run via cron: 30 1 * * * /home/faucetlist/scripts/run-analytics.sh
 
 LOGS_DIR="$HOME/domains/faucetlist.org/logs"
 ANALYTICS_SCRIPT="$HOME/scripts/analytics.py"

@@ -790,7 +790,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
                     delete activeTimers[faucetId];
                     delete timerStates[faucetId];
                     if (state.name) notifyReady(state.name);
-                    renderFaucets();
+                    setTimeout(renderFaucets, 0);
                     return; // renderFaucets will restart timers if needed
                 }
             }
@@ -803,14 +803,13 @@ $floatingAd = getRandomAd('ads-floating.txt');
         }
         
         function updateTimerDisplay($element, timeleft, timetotal) {
-            const progressBarWidth = timeleft * $element.width() / timetotal;
+            const progressPercent = (timeleft / timetotal) * 100;
             const text = formatTime(timeleft);
             const $fill = $element.find('.progress-bar-fill');
             const $timeLeft = $element.find('.time-left');
 
             $timeLeft.html(text);
-            // Update width immediately without animation for smoother updates
-            $fill.css('width', progressBarWidth + 'px');
+            $fill.css('width', progressPercent + '%');
         }
     </script>
     <script src="js/auth.js"></script>
