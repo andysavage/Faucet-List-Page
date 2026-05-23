@@ -91,14 +91,14 @@ preview_deletions() {
     
     local deletions
     deletions=$(rsync -avzn --delete --itemize-changes \
-        -e "ssh -p 10500" \
+        -e "ssh" \
         --exclude='.git' \
         --exclude='node_modules' \
         --exclude='.DS_Store' \
         --exclude='media/*' \
         --exclude='data/analytics/' \
         "$LOCAL_SITE_DIR/" \
-        "faucetlist@directadmin-de.kxe.io:$REMOTE_SITE_PATH/" 2>/dev/null | grep '^\*deleting' || true)
+        "faucetlist-directadmin:$REMOTE_SITE_PATH/" 2>/dev/null | grep '^\*deleting' || true)
     
     if [[ -n "$deletions" ]]; then
         warning "The following files will be DELETED from the server:"
@@ -139,14 +139,14 @@ fi
 preview_deletions
 
 echo "📁 Syncing site files (html, js, css, api)..."
-rsync -avz --delete -e "ssh -p 10500" \
+rsync -avz --delete -e "ssh" \
     --exclude='.git' \
     --exclude='node_modules' \
     --exclude='.DS_Store' \
     --exclude='media/*' \
     --exclude='data/analytics/' \
     "$LOCAL_SITE_DIR/" \
-    "faucetlist@directadmin-de.kxe.io:$REMOTE_SITE_PATH/"
+    "faucetlist-directadmin:$REMOTE_SITE_PATH/"
 
 if [ $? -ne 0 ]; then
     error_exit "Site sync failed"
@@ -154,7 +154,7 @@ fi
 
 echo ""
 echo "� Ensuring logs directory exists on server..."
-ssh -p 10500 faucetlist@directadmin-de.kxe.io \
+ssh faucetlist-directadmin \
     "mkdir -p $REMOTE_LOGS_PATH" || { warning "Could not create logs dir (may already exist)"; }
 
 echo ""
