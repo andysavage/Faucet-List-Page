@@ -835,9 +835,27 @@ $floatingAd = getRandomAd('ads-floating.txt');
     </div>
 
     <div id="top-image"
-        style="text-align:center; margin: 0 auto 20px auto; max-width: 728px; aspect-ratio: 728 / 90; display: flex; justify-content: center; align-items: center;">
+        style="text-align:center; margin: 0 auto 20px auto; max-width: 728px; aspect-ratio: 728 / 90; display: flex; justify-content: center; align-items: center; position: relative;">
+        <div id="top-image-close" class="float-notice-close" onclick="closeBanner()" title="Close" style="top: -12px; right: -12px;">×</div>
         <?php echo $bannerAd; ?>
     </div>
+    <script>
+    (function() {
+        var HIDE_DURATION = 15 * 60 * 1000; // 15 minutes
+        var STORAGE_KEY = 'faucetlist_banner_closed_ts';
+        var container = document.getElementById('top-image');
+
+        var closedAt = localStorage.getItem(STORAGE_KEY);
+        if (closedAt && (Date.now() - parseInt(closedAt)) <= HIDE_DURATION) {
+            container.style.display = 'none';
+        }
+
+        window.closeBanner = function() {
+            container.style.display = 'none';
+            localStorage.setItem(STORAGE_KEY, Date.now().toString());
+        };
+    })();
+    </script>
 
     <div class="main-content">
         <h1>Faucet List</h1>
@@ -938,24 +956,32 @@ $floatingAd = getRandomAd('ads-floating.txt');
             };
 
             const FaucetStore = {
+                _cache: null,
                 async getFaucets() {
+                    if (this._cache !== null) return this._cache;
+
                     if (auth.isLoggedIn()) {
                         const cloudFaucets = await FaucetCloud.loadFaucets();
                         if (cloudFaucets !== null && cloudFaucets.length > 0) {
                             localStorage.setItem('faucets', JSON.stringify(cloudFaucets));
+                            this._cache = cloudFaucets;
                             return cloudFaucets;
                         } else if (cloudFaucets !== null && cloudFaucets.length === 0) {
                             const localFaucets = JSON.parse(localStorage.getItem('faucets')) || [];
                             if (localFaucets.length > 0) {
                                 await FaucetCloud.saveFaucets(localFaucets);
                             }
+                            this._cache = localFaucets;
                             return localFaucets;
                         }
                     }
 
-                    return JSON.parse(localStorage.getItem('faucets')) || [];
+                    const faucets = JSON.parse(localStorage.getItem('faucets')) || [];
+                    this._cache = faucets;
+                    return faucets;
                 },
                 async saveFaucets(faucets) {
+                    this._cache = faucets;
                     localStorage.setItem('faucets', JSON.stringify(faucets));
 
                     if (auth.isLoggedIn()) {
