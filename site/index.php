@@ -835,28 +835,11 @@ $floatingAd = getRandomAd('ads-floating.txt');
         </div>
     </div>
 
-    <div id="top-image"
+    <div id="banner-wrap"
         style="text-align:center; margin: 0 auto 20px auto; max-width: 728px; aspect-ratio: 728 / 90; display: flex; justify-content: center; align-items: center; position: relative;">
-        <div id="top-image-close" class="float-notice-close" onclick="closeBanner()" title="Close" style="top: auto; bottom: -12px; right: -12px;">×</div>
         <?php echo $bannerAd; ?>
     </div>
-    <script>
-    (function() {
-        var HIDE_DURATION = 15 * 60 * 1000; // 15 minutes
-        var STORAGE_KEY = 'faucetlist_banner_closed_ts';
-        var container = document.getElementById('top-image');
-
-        var closedAt = localStorage.getItem(STORAGE_KEY);
-        if (closedAt && (Date.now() - parseInt(closedAt)) <= HIDE_DURATION) {
-            container.style.display = 'none';
-        }
-
-        window.closeBanner = function() {
-            container.style.display = 'none';
-            localStorage.setItem(STORAGE_KEY, Date.now().toString());
-        };
-    })();
-    </script>
+    <script src="/js/banner.js"></script>
 
     <div class="main-content">
         <h1>Faucet List</h1>
