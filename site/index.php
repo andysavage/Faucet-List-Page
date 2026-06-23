@@ -825,6 +825,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
             <div class="menu-dropdown">
 <button class="button-secondary menu-dropdown-toggle" title="More">???</button>
                 <div class="menu-dropdown-content">
+                    <a href="/guide.html">Guide</a>
                     <a href="/demo.html">Demo</a>
                     <a href="/about.html">About</a>
                 </div>
