@@ -605,6 +605,28 @@ $floatingAd = getRandomAd('ads-floating.txt');
             transform: scale(1.1);
         }
 
+        #banner-wrap { position: relative; }
+        .banner-close {
+            position: absolute;
+            bottom: -12px;
+            right: -12px;
+            width: 26px;
+            height: 26px;
+            background: #fff;
+            border: none;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            color: #333;
+            font-size: 18px;
+            line-height: 26px;
+            text-align: center;
+            cursor: pointer;
+            z-index: 1002;
+            padding: 0;
+            transition: transform 0.2s, color 0.2s;
+        }
+        .banner-close:hover { color: #e74c3c; transform: scale(1.1); }
+
         .float-notice-content {
             width: 100%;
             height: 100%;
