@@ -836,7 +836,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
 
     <div id="top-image"
         style="text-align:center; margin: 0 auto 20px auto; max-width: 728px; aspect-ratio: 728 / 90; display: flex; justify-content: center; align-items: center; position: relative;">
-        <div id="top-image-close" class="float-notice-close" onclick="closeBanner()" title="Close" style="top: -12px; right: -12px;">×</div>
+        <div id="top-image-close" class="float-notice-close" onclick="closeBanner()" title="Close" style="top: auto; bottom: -12px; right: -12px;">×</div>
         <?php echo $bannerAd; ?>
     </div>
     <script>
