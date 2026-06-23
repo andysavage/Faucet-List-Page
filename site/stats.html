@@ -301,6 +301,22 @@
             text-align: center;
         }
 
+        .user-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .user-stats-heading {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--muted);
+            margin-bottom: 0.75rem;
+            grid-column: 1 / -1;
+        }
+
         footer {
             margin-top: 2rem;
             text-align: center;
@@ -368,6 +384,18 @@
         <div class="panel">
             <h2>Referrers</h2>
             <div class="bar-list" id="referrersList"></div>
+        </div>
+    </div>
+
+    <div id="userStatsSection" hidden>
+        <div class="user-stats" id="userStatsGrid">
+            <div class="user-stats-heading">Registered Users</div>
+            <div class="card"><div class="card-label">Total Users</div><div class="card-value" id="uTotal">&#8212;</div></div>
+            <div class="card"><div class="card-label">Active 7d</div><div class="card-value" id="uActive7">&#8212;</div></div>
+            <div class="card"><div class="card-label">Active 30d</div><div class="card-value" id="uActive30">&#8212;</div></div>
+            <div class="card"><div class="card-label">Users w/ Faucets</div><div class="card-value" id="uWithFaucets">&#8212;</div></div>
+            <div class="card"><div class="card-label">Total Faucets</div><div class="card-value" id="uTotalFaucets">&#8212;</div></div>
+            <div class="card"><div class="card-label">Avg Faucets</div><div class="card-value" id="uAvgFaucets">&#8212;</div></div>
         </div>
     </div>
 
@@ -721,6 +749,28 @@
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;');
     }
+
+    /* ── User stats (admin only) ── */
+    (function loadUserStats() {
+        var session;
+        try { session = JSON.parse(localStorage.getItem('directsponsor_session')); } catch (e) {}
+        if (!session || !session.combined_user_id) return;
+
+        fetch('api/user-stats.php?user_id=' + encodeURIComponent(session.combined_user_id))
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (data) {
+                if (!data || !data.success) return;
+                var s = data.stats;
+                document.getElementById('uTotal').textContent        = fmt(s.total_users);
+                document.getElementById('uActive7').textContent      = fmt(s.active_7d);
+                document.getElementById('uActive30').textContent     = fmt(s.active_30d);
+                document.getElementById('uWithFaucets').textContent  = fmt(s.users_with_faucets);
+                document.getElementById('uTotalFaucets').textContent = fmt(s.total_faucets);
+                document.getElementById('uAvgFaucets').textContent   = s.avg_faucets_per_user;
+                document.getElementById('userStatsSection').hidden = false;
+            })
+            .catch(function () {});
+    }());
 
 }());
 </script>
