@@ -95,8 +95,8 @@ preview_deletions() {
         --exclude='.git' \
         --exclude='node_modules' \
         --exclude='.DS_Store' \
-        --exclude='media/*' \
-        --exclude='data/analytics/' \
+        --exclude='media' \
+        --exclude='data' \
         "$LOCAL_SITE_DIR/" \
         "faucetlist-directadmin:$REMOTE_SITE_PATH/" 2>/dev/null | grep '^\*deleting' || true)
     
@@ -143,8 +143,8 @@ rsync -avz --delete -e "ssh" \
     --exclude='.git' \
     --exclude='node_modules' \
     --exclude='.DS_Store' \
-    --exclude='media/*' \
-    --exclude='data/analytics/' \
+    --exclude='media' \
+    --exclude='data' \
     "$LOCAL_SITE_DIR/" \
     "faucetlist-directadmin:$REMOTE_SITE_PATH/"
 

@@ -605,28 +605,6 @@ $floatingAd = getRandomAd('ads-floating.txt');
             transform: scale(1.1);
         }
 
-        #banner-wrap { position: relative; }
-        .banner-close {
-            position: absolute;
-            bottom: -12px;
-            right: -12px;
-            width: 26px;
-            height: 26px;
-            background: #fff;
-            border: none;
-            border-radius: 50%;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            color: #333;
-            font-size: 18px;
-            line-height: 26px;
-            text-align: center;
-            cursor: pointer;
-            z-index: 1002;
-            padding: 0;
-            transition: transform 0.2s, color 0.2s;
-        }
-        .banner-close:hover { color: #e74c3c; transform: scale(1.1); }
-
         .float-notice-content {
             width: 100%;
             height: 100%;
@@ -847,7 +825,6 @@ $floatingAd = getRandomAd('ads-floating.txt');
             <div class="menu-dropdown">
 <button class="button-secondary menu-dropdown-toggle" title="More">???</button>
                 <div class="menu-dropdown-content">
-                    <a href="/guide.html">Guide</a>
                     <a href="/demo.html">Demo</a>
                     <a href="/about.html">About</a>
                 </div>
@@ -857,16 +834,33 @@ $floatingAd = getRandomAd('ads-floating.txt');
         </div>
     </div>
 
-    <div id="banner-wrap"
+    <div id="top-image"
         style="text-align:center; margin: 0 auto 20px auto; max-width: 728px; aspect-ratio: 728 / 90; display: flex; justify-content: center; align-items: center; position: relative;">
+        <div id="top-image-close" class="float-notice-close" onclick="closeBanner()" title="Close" style="top: -12px; right: -12px;">×</div>
         <?php echo $bannerAd; ?>
     </div>
-    <script src="/js/banner.js"></script>
+    <script>
+    (function() {
+        var HIDE_DURATION = 15 * 60 * 1000; // 15 minutes
+        var STORAGE_KEY = 'faucetlist_banner_closed_ts';
+        var container = document.getElementById('top-image');
+
+        var closedAt = localStorage.getItem(STORAGE_KEY);
+        if (closedAt && (Date.now() - parseInt(closedAt)) <= HIDE_DURATION) {
+            container.style.display = 'none';
+        }
+
+        window.closeBanner = function() {
+            container.style.display = 'none';
+            localStorage.setItem(STORAGE_KEY, Date.now().toString());
+        };
+    })();
+    </script>
 
     <div class="main-content">
         <h1>Faucet List</h1>
 
-        <div id="welcome-section" class="welcome-section">
+        <div id="welcome-section" class="welcome-section" style="display: none;">
             <div class="welcome-description">
                 Track your cryptocurrency faucets with automatic timers that stay accurate even when you switch tabs.
             </div>
@@ -987,12 +981,32 @@ $floatingAd = getRandomAd('ads-floating.txt');
                     return faucets;
                 },
                 async saveFaucets(faucets) {
-                    this._cache = faucets;
-                    localStorage.setItem('faucets', JSON.stringify(faucets));
+                    let toSave = faucets;
 
                     if (auth.isLoggedIn()) {
-                        await FaucetCloud.saveFaucets(faucets);
+                        const cloudFaucets = await FaucetCloud.loadFaucets();
+                        if (cloudFaucets !== null && cloudFaucets.length > 0) {
+                            // Merge: for each faucet, keep the most recent last_claim
+                            const cloudMap = {};
+                            cloudFaucets.forEach(f => { cloudMap[f.id] = f; });
+                            toSave = faucets.map(f => {
+                                const cloud = cloudMap[f.id];
+                                if (cloud && (cloud.last_claim || 0) > (f.last_claim || 0)) {
+                                    return { ...f, last_claim: cloud.last_claim };
+                                }
+                                return f;
+                            });
+                            // Include any faucets that exist on cloud but not locally
+                            const localIds = new Set(faucets.map(f => f.id));
+                            cloudFaucets.forEach(f => {
+                                if (!localIds.has(f.id)) toSave.push(f);
+                            });
+                        }
+                        await FaucetCloud.saveFaucets(toSave);
                     }
+
+                    this._cache = toSave;
+                    localStorage.setItem('faucets', JSON.stringify(toSave));
                 },
             };
 
@@ -1313,6 +1327,18 @@ $floatingAd = getRandomAd('ads-floating.txt');
                 resizeTimer = setTimeout(async function () {
                     await renderFaucets();
                 }, 250);
+            });
+
+            // Reload page when returning after 5+ minutes away, so cloud data is re-fetched
+            // and stale in-memory cache doesn't overwrite claims made on another machine.
+            let hiddenAt = null;
+            const STALE_THRESHOLD_MS = 5 * 60 * 1000;
+            document.addEventListener('visibilitychange', function () {
+                if (document.hidden) {
+                    hiddenAt = Date.now();
+                } else if (hiddenAt !== null && Date.now() - hiddenAt >= STALE_THRESHOLD_MS) {
+                    window.location.reload();
+                }
             });
         });
     </script>
