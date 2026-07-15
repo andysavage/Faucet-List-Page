@@ -1364,15 +1364,27 @@ $floatingAd = getRandomAd('ads-floating.txt');
     </div>
     <script>
     (function() {
-        var HIDE_DURATION = 10 * 60 * 1000; // 10 minutes
-        var STORAGE_KEY = 'faucetlist_floating_closed_ts';
+        var HIDE_DURATION     = 10 * 60 * 1000; // 10 minutes
+        var STORAGE_KEY       = 'faucetlist_floating_closed_ts';
+        var NEW_VISITOR_DELAY = 30 * 1000; // 30 seconds
         var container = document.getElementById('float-notice');
-        
-        var closedAt = localStorage.getItem(STORAGE_KEY);
-        if (!closedAt || (Date.now() - parseInt(closedAt)) > HIDE_DURATION) {
+
+        function showNotice() {
             container.style.display = 'block';
         }
-        
+
+        var closedAt = localStorage.getItem(STORAGE_KEY);
+        if (!closedAt || (Date.now() - parseInt(closedAt)) > HIDE_DURATION) {
+            var isLoggedIn = !!localStorage.getItem('directsponsor_session');
+            var faucetsRaw = localStorage.getItem('faucets');
+            var hasFaucets = faucetsRaw && JSON.parse(faucetsRaw).length > 0;
+            if (!isLoggedIn && !hasFaucets) {
+                setTimeout(showNotice, NEW_VISITOR_DELAY);
+            } else {
+                showNotice();
+            }
+        }
+
         window.closeNotice = function() {
             container.style.display = 'none';
             localStorage.setItem(STORAGE_KEY, Date.now().toString());

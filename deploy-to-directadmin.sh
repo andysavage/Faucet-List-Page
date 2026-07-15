@@ -97,6 +97,7 @@ preview_deletions() {
         --exclude='.DS_Store' \
         --exclude='media' \
         --exclude='data' \
+        --exclude='surfvisits.txt' \
         "$LOCAL_SITE_DIR/" \
         "faucetlist-directadmin:$REMOTE_SITE_PATH/" 2>/dev/null | grep '^\*deleting' || true)
     
@@ -145,6 +146,7 @@ rsync -avz --delete -e "ssh" \
     --exclude='.DS_Store' \
     --exclude='media' \
     --exclude='data' \
+    --exclude='surfvisits.txt' \
     "$LOCAL_SITE_DIR/" \
     "faucetlist-directadmin:$REMOTE_SITE_PATH/"
 
