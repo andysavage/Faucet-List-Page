@@ -1357,6 +1357,12 @@ $floatingAd = getRandomAd('ads-floating.txt');
             </form>
         </div>
     </div>
+    <footer style="margin-top:40px; padding:16px; text-align:center; font-size:0.85em; color:#6c757d; border-top:1px solid #dee2e6;">
+        <a href="https://www.clickforcharity.net" target="_blank" rel="noopener">ClickForCharity.net</a>
+        &nbsp;&middot;&nbsp;
+        <a href="https://www.directsponsor.net" target="_blank" rel="noopener">DirectSponsor.net</a>
+    </footer>
+
 <?php if ($floatingAd): ?>
     <div id="float-notice" class="float-notice">
         <div class="float-notice-close" onclick="closeNotice()" title="Close">×</div>
