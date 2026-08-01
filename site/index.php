@@ -737,6 +737,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
         var animationFrameId = null; // Global animation frame ID
         var timerStates = {}; // Track timer states with start times
         var lastUpdateTime = 0; // Track last update time for throttling
+        var notifyTimeouts = {}; // Per-faucet setTimeout handles for notifications (fires in background tabs)
 
         function formatTime(seconds) {
             // Round to nearest integer to avoid floating point precision issues
@@ -763,8 +764,10 @@ $floatingAd = getRandomAd('ads-floating.txt');
                 cancelAnimationFrame(animationFrameId);
                 animationFrameId = null;
             }
+            for (var id in notifyTimeouts) clearTimeout(notifyTimeouts[id]);
             activeTimers = {};
             timerStates = {};
+            notifyTimeouts = {};
             lastUpdateTime = 0;
         }
 
@@ -778,7 +781,17 @@ $floatingAd = getRandomAd('ads-floating.txt');
                 name: faucetName
             };
             activeTimers[faucetId] = true;
-            
+
+            // Schedule notification via setTimeout so it fires even in background tabs.
+            // rAF (used for display updates) is paused by browsers in background tabs,
+            // but setTimeout is not, so this is the reliable path for notifications.
+            if (notifyTimeouts[faucetId]) clearTimeout(notifyTimeouts[faucetId]);
+            notifyTimeouts[faucetId] = setTimeout(function() {
+                if (timerStates[faucetId]) timerStates[faucetId].notified = true;
+                delete notifyTimeouts[faucetId];
+                notifyReady(faucetName);
+            }, timeleft * 1000);
+
             // Start global animation loop if not already running
             if (!animationFrameId) {
                 updateAllTimers();
@@ -808,10 +821,15 @@ $floatingAd = getRandomAd('ads-floating.txt');
                     hasActiveTimers = true;
                     updateTimerDisplay(state.element, timeleft, state.totalTime);
                 } else {
-                    // Timer finished
+                    // Timer finished - cancel pending notification timeout if still waiting,
+                    // then fire notification (unless setTimeout already fired it in background).
+                    if (notifyTimeouts[faucetId]) {
+                        clearTimeout(notifyTimeouts[faucetId]);
+                        delete notifyTimeouts[faucetId];
+                    }
                     delete activeTimers[faucetId];
                     delete timerStates[faucetId];
-                    if (state.name) notifyReady(state.name);
+                    if (state.name && !state.notified) notifyReady(state.name);
                     setTimeout(renderFaucets, 0);
                     return; // renderFaucets will restart timers if needed
                 }
