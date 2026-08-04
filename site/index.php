@@ -986,18 +986,13 @@ $floatingAd = getRandomAd('ads-floating.txt');
 
                     if (auth.isLoggedIn()) {
                         const cloudFaucets = await FaucetCloud.loadFaucets();
-                        if (cloudFaucets !== null && cloudFaucets.length > 0) {
+                        if (cloudFaucets !== null) {
+                            // Cloud is source of truth for logged-in users
                             localStorage.setItem('faucets', JSON.stringify(cloudFaucets));
                             this._cache = cloudFaucets;
                             return cloudFaucets;
-                        } else if (cloudFaucets !== null && cloudFaucets.length === 0) {
-                            const localFaucets = JSON.parse(localStorage.getItem('faucets')) || [];
-                            if (localFaucets.length > 0) {
-                                await FaucetCloud.saveFaucets(localFaucets);
-                            }
-                            this._cache = localFaucets;
-                            return localFaucets;
                         }
+                        // Cloud fetch failed - fall back to local without uploading
                     }
 
                     const faucets = JSON.parse(localStorage.getItem('faucets')) || [];
