@@ -53,6 +53,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
     $faucets = $input['faucets'] ?? [];
 
+    // Merge with existing data: never allow a client to overwrite a newer last_claim
+    // with an older one. This prevents stale devices from clobbering recent claims.
+    if (file_exists($filePath)) {
+        $existing = json_decode(file_get_contents($filePath), true) ?? [];
+        $existingById = [];
+        foreach ($existing as $f) {
+            if (isset($f['id'])) $existingById[$f['id']] = $f;
+        }
+        foreach ($faucets as &$f) {
+            $id = $f['id'] ?? null;
+            if ($id && isset($existingById[$id])) {
+                $existingClaim = $existingById[$id]['last_claim'] ?? 0;
+                $incomingClaim = $f['last_claim'] ?? 0;
+                if ($existingClaim > $incomingClaim) {
+                    $f['last_claim'] = $existingClaim;
+                }
+            }
+        }
+        unset($f);
+    }
+
     $json = json_encode($faucets, JSON_PRETTY_PRINT);
     $result = @file_put_contents($filePath, $json);
 

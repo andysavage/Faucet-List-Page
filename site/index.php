@@ -627,6 +627,27 @@ $floatingAd = getRandomAd('ads-floating.txt');
         }
         .banner-close:hover { color: #e74c3c; transform: scale(1.1); }
 
+        /* Priority star toggle */
+        .priority-star {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            padding: 0;
+            margin-left: 6px;
+            float: right;
+            opacity: 0.25;
+            vertical-align: middle;
+            line-height: 1;
+            transition: opacity 0.15s;
+        }
+        .priority-star.is-priority {
+            opacity: 1;
+        }
+        .priority-star:hover {
+            opacity: 1;
+        }
+
         .float-notice-content {
             width: 100%;
             height: 100%;
@@ -911,7 +932,8 @@ $floatingAd = getRandomAd('ads-floating.txt');
                     <tr>
                         <td>Url</td>
                         <td><input type="text" id="faucet-url" required></td>
-                        <td colspan="2"><button type="submit" class="button-primary">Submit</button></td>
+                        <td><label><input type="checkbox" id="faucet-priority"> ⭐ Priority</label></td>
+                        <td><button type="submit" class="button-primary">Submit</button></td>
                     </tr>
                 </table>
             </form>
@@ -1027,16 +1049,18 @@ $floatingAd = getRandomAd('ads-floating.txt');
 
                 faucets.sort((a, b) => {
                     const now = Math.floor(Date.now() / 1000);
-                    const a_last_claim = a.last_claim || 0;
-                    const b_last_claim = b.last_claim || 0;
-                    const a_timeleft = Math.max(0, (a.timer * 60) - (now - a_last_claim));
-                    const b_timeleft = Math.max(0, (b.timer * 60) - (now - b_last_claim));
+                    const a_timeleft = Math.max(0, (a.timer * 60) - (now - (a.last_claim || 0)));
+                    const b_timeleft = Math.max(0, (b.timer * 60) - (now - (b.last_claim || 0)));
                     const a_isReady = a_timeleft === 0;
                     const b_isReady = b_timeleft === 0;
 
-                    if (a_isReady && !b_isReady) return -1;
-                    if (!a_isReady && b_isReady) return 1;
-                    if (a_isReady && b_isReady) return a.timer - b.timer;
+                    if (a_isReady && b_isReady) {
+                        // Within ready group: priority faucets first, then alphabetical
+                        if (!!a.priority !== !!b.priority) return a.priority ? -1 : 1;
+                        return a.name.localeCompare(b.name);
+                    }
+                    if (a_isReady !== b_isReady) return a_isReady ? -1 : 1;
+                    // Both counting down: soonest first, priority has no effect
                     return a_timeleft - b_timeleft;
                 });
 
@@ -1075,9 +1099,15 @@ $floatingAd = getRandomAd('ads-floating.txt');
                         `;
                     }
 
+                    const isPriority = !!faucet.priority;
+                    const starClass = isPriority ? 'priority-star is-priority' : 'priority-star';
+                    const starIcon  = isPriority ? '⭐' : '☆';
+                    const starTitle = isPriority ? 'Remove priority' : 'Set as priority';
                     const row = `
                         <tr>
-                            <td>${faucet.name}</td>
+                            <td>
+                                ${faucet.name}<button class="${starClass}" data-id="${faucet.id}" title="${starTitle}">${starIcon}</button>
+                            </td>
                             <td>${progressCellHtml}</td>
                             <td>
                                 <button class="button-secondary edit-faucet" data-id="${faucet.id}">Edit</button>
@@ -1101,7 +1131,8 @@ $floatingAd = getRandomAd('ads-floating.txt');
                     name: $('#faucet-name').val(),
                     url: $('#faucet-url').val(),
                     timer: parseInt($('#faucet-timer').val()),
-                    last_claim: 0
+                    last_claim: 0,
+                    priority: $('#faucet-priority').is(':checked')
                 };
                 faucets.push(newFaucet);
                 await FaucetStore.saveFaucets(faucets);
@@ -1119,6 +1150,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
                     $('#edit-faucet-name').val(faucet.name);
                     $('#edit-faucet-timer').val(faucet.timer);
                     $('#edit-faucet-url').val(faucet.url);
+                    $('#edit-faucet-priority').prop('checked', !!faucet.priority);
                     $('#edit-modal-backdrop').css('display', 'flex');
                 }
             });
@@ -1137,6 +1169,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
                     faucets[index].name = $('#edit-faucet-name').val();
                     faucets[index].timer = parseInt($('#edit-faucet-timer').val());
                     faucets[index].url = $('#edit-faucet-url').val();
+                    faucets[index].priority = $('#edit-faucet-priority').is(':checked');
                     await FaucetStore.saveFaucets(faucets);
                     $('#edit-modal-backdrop').hide();
                     renderFaucets();
@@ -1161,6 +1194,17 @@ $floatingAd = getRandomAd('ads-floating.txt');
                 const faucet = faucets.find(f => f.id === faucetId);
                 if (faucet) {
                     faucet.last_claim = Math.floor(Date.now() / 1000);
+                    await FaucetStore.saveFaucets(faucets);
+                    renderFaucets();
+                }
+            });
+
+            $('#faucet-table').on('click', '.priority-star', async function () {
+                const faucetId = $(this).data('id');
+                let faucets = await FaucetStore.getFaucets();
+                const faucet = faucets.find(f => f.id === faucetId);
+                if (faucet) {
+                    faucet.priority = !faucet.priority;
                     await FaucetStore.saveFaucets(faucets);
                     renderFaucets();
                 }
@@ -1361,6 +1405,9 @@ $floatingAd = getRandomAd('ads-floating.txt');
                 <div class="modal-group">
                     <label>URL</label>
                     <input type="text" id="edit-faucet-url" required>
+                </div>
+                <div class="modal-group">
+                    <label><input type="checkbox" id="edit-faucet-priority"> ⭐ Priority</label>
                 </div>
                 <div class="modal-actions">
                     <button type="button" id="delete-faucet-confirm" class="button button-delete">Delete</button>

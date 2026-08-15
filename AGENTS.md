@@ -41,9 +41,15 @@ Faucetlist.org is a cryptocurrency faucet management system that helps users tra
 
 **User Data (Faucets)**
 1. Guest users: localStorage only
-2. Logged-in users: localStorage + POST to `faucet-sync.php`
+2. Logged-in users: localStorage + POST to `faucet-sync.php` on every Claim click
 3. Server stores in `data/faucetlist/{user_id}.json`
-4. On load, app fetches from server if logged in, falls back to localStorage
+4. On load, logged-in users always load from cloud (cloud is source of truth); localStorage is only a local mirror, never uploaded back to cloud automatically
+5. If cloud fetch fails (null), falls back to localStorage read-only — never auto-uploads local data to cloud
+6. Guest faucets are preserved in `faucets_to_import` when logging in and offered via an explicit import modal
+
+**Cloud Sync Safety Rules (important — do not regress)**
+- `FaucetStore.getFaucets()`: if logged in and cloud returns any result (even empty array), use it and update localStorage. Never upload localStorage to cloud on load.
+- `faucet-sync.php` POST: merges incoming faucets with existing server data, keeping the higher (newer) `last_claim` per faucet ID. A stale client can never overwrite a newer server timestamp.
 
 **Advertisements**
 1. Banner ads: PHP reads `data/ads.txt` server-side, picks random ad on each page load
@@ -66,6 +72,7 @@ Faucetlist.org is a cryptocurrency faucet management system that helps users tra
 - Works in background tabs and minimized browser
 - Preference stored in localStorage (`faucetlist_notify`)
 - Only works while page is open (not when browser closed)
+- **Implementation**: notification is scheduled via `setTimeout` in `progress()` at timer start. This fires independently of the `requestAnimationFrame` display loop, which is paused in background tabs. The rAF loop handles display only; `setTimeout` handles notification. Do not merge these two concerns again.
 
 ### Timer System
 
