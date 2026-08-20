@@ -1,5 +1,7 @@
 # Prompt for IDE: Add "Priority" flag to FaucetList
 
+via https://claude.ai/chat/bbdb356b-7ea2-49a7-95b6-141d6521a3a5
+
 Add a priority/favorite feature to the faucet list so certain faucets (e.g. ones with a daily bonus) surface at the top of the list the moment they're claimable, without disturbing normal countdown sorting while they're still ticking.
 
 ## Data model
