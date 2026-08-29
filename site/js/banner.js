@@ -2,7 +2,7 @@
     var HIDE_DURATION     = 15 * 60 * 1000; // 15 minutes
     var STORAGE_KEY       = 'faucetlist_banner_closed_ts';
     var NEW_VISITOR_DELAY = 30 * 1000; // 30 seconds
-    var CONTAINER_ID      = 'banner-wrap';
+    var CONTAINER_ID      = 'banner-outer';
 
     var container = document.getElementById(CONTAINER_ID);
     if (!container) return;
@@ -23,7 +23,7 @@
             container.style.display = 'none';
             localStorage.setItem(STORAGE_KEY, Date.now().toString());
         });
-        container.appendChild(btn);
+        container.insertBefore(btn, container.firstChild);
     }
 
     /* Delay banner for visitors with no faucets and not logged in */

@@ -605,11 +605,9 @@ $floatingAd = getRandomAd('ads-floating.txt');
             transform: scale(1.1);
         }
 
-        #banner-wrap { position: relative; }
+        #banner-outer { display: flex; flex-direction: column; align-items: flex-end; }
         .banner-close {
-            position: absolute;
-            bottom: -12px;
-            right: -12px;
+            margin-bottom: 4px;
             width: 26px;
             height: 26px;
             background: #fff;
@@ -621,7 +619,6 @@ $floatingAd = getRandomAd('ads-floating.txt');
             line-height: 26px;
             text-align: center;
             cursor: pointer;
-            z-index: 1002;
             padding: 0;
             transition: transform 0.2s, color 0.2s;
         }
@@ -896,9 +893,11 @@ $floatingAd = getRandomAd('ads-floating.txt');
         </div>
     </div>
 
-    <div id="banner-wrap"
-        style="text-align:center; margin: 0 auto 20px auto; max-width: 728px; aspect-ratio: 728 / 90; display: flex; justify-content: center; align-items: center; position: relative;">
-        <?php echo $bannerAd; ?>
+    <div id="banner-outer" style="position: relative; max-width: 728px; margin: 0 auto 20px auto; text-align: center;">
+        <div id="banner-wrap"
+            style="aspect-ratio: 728 / 90; display: flex; justify-content: center; align-items: center;">
+            <?php echo $bannerAd; ?>
+        </div>
     </div>
     <script src="/js/banner.js"></script>
 
