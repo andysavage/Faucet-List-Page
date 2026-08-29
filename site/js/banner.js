@@ -23,7 +23,7 @@
             container.style.display = 'none';
             localStorage.setItem(STORAGE_KEY, Date.now().toString());
         });
-        container.insertBefore(btn, container.firstChild);
+        container.appendChild(btn);
     }
 
     /* Delay banner for visitors with no faucets and not logged in */

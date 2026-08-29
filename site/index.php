@@ -397,7 +397,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
             background: #3a3a3a;
         }
         
-        body.dark-mode .float-notice {
+        body.dark-mode .float-notice-content {
             background: #2d2d2d;
             border-color: #555;
         }
@@ -563,11 +563,8 @@ $floatingAd = getRandomAd('ads-floating.txt');
             display: none;
             /* Hidden by default, shown by JS */
             animation: slideInUp 0.5s ease-out;
-            background: white;
-            padding: 1px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+            flex-direction: column;
+            align-items: flex-end;
         }
 
         @keyframes slideInUp {
@@ -583,9 +580,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
         }
 
         .float-notice-close {
-            position: absolute;
-            top: -12px;
-            right: -12px;
+            margin-bottom: 4px;
             width: 26px;
             height: 26px;
             background: #fff;
@@ -596,7 +591,6 @@ $floatingAd = getRandomAd('ads-floating.txt');
             line-height: 26px;
             text-align: center;
             cursor: pointer;
-            z-index: 1002;
             transition: transform 0.2s, color 0.2s;
         }
 
@@ -647,10 +641,13 @@ $floatingAd = getRandomAd('ads-floating.txt');
 
         .float-notice-content {
             width: 100%;
-            height: 100%;
             overflow: hidden;
             display: flex;
             justify-content: center;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
         }
 
         .float-notice-content img {
@@ -1435,7 +1432,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
         var container = document.getElementById('float-notice');
 
         function showNotice() {
-            container.style.display = 'block';
+            container.style.display = 'flex';
         }
 
         var closedAt = localStorage.getItem(STORAGE_KEY);
