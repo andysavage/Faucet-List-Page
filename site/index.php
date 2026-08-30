@@ -564,7 +564,6 @@ $floatingAd = getRandomAd('ads-floating.txt');
             /* Hidden by default, shown by JS */
             animation: slideInUp 0.5s ease-out;
             flex-direction: column;
-            align-items: flex-end;
         }
 
         @keyframes slideInUp {
@@ -591,6 +590,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
             line-height: 26px;
             text-align: center;
             cursor: pointer;
+            align-self: flex-end;
             transition: transform 0.2s, color 0.2s;
         }
 
@@ -599,7 +599,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
             transform: scale(1.1);
         }
 
-        #banner-outer { display: flex; flex-direction: column; align-items: flex-end; }
+        #banner-outer { display: flex; flex-direction: column; }
         .banner-close {
             margin-bottom: 4px;
             width: 26px;
@@ -614,6 +614,7 @@ $floatingAd = getRandomAd('ads-floating.txt');
             text-align: center;
             cursor: pointer;
             padding: 0;
+            align-self: flex-end;
             transition: transform 0.2s, color 0.2s;
         }
         .banner-close:hover { color: #e74c3c; transform: scale(1.1); }

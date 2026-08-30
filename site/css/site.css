@@ -60,7 +60,7 @@ li { margin-bottom: 8px; }
 .cta a { color: #2ea2cc; font-weight: bold; }
 
 /* ── Banner close button ── */
-#banner-outer { display: flex; flex-direction: column; align-items: flex-end; }
+#banner-outer { display: flex; flex-direction: column; }
 
 .banner-close {
     margin-bottom: 4px;
@@ -76,6 +76,7 @@ li { margin-bottom: 8px; }
     text-align: center;
     cursor: pointer;
     padding: 0;
+    align-self: flex-end;
     transition: transform 0.2s, color 0.2s;
 }
 
