@@ -1,0 +1,1 @@
+the guide page still has an ad showing when a new user arrives, maybe we only make the home page not show ads to 30sec or similar time. 
