@@ -269,3 +269,7 @@ data/                        # Outside web root
 - Currently no membership/payment system
 - Ad inventory management could use a database
 - Could implement ad scheduling and A/B testing
+
+## Priority and sort order
+- Faucets can be flagged as priority (checkbox, shown with a star marker).
+- Sort: ready faucets first, then by countdown.
