@@ -67,6 +67,7 @@ class AuthSystem {
     }
 
     handleAuthCallback() {
+        const urlParams = new URLSearchParams(window.location.search);
         const hashParams = new URLSearchParams(window.location.hash.slice(1));
         const jwtToken = hashParams.get('jwt');
         const error = urlParams.get('error');
