@@ -168,4 +168,4 @@ echo "   ✓ Data files managed on server (not synced)"
 echo ""
 echo "🔍 Verify deployment by visiting: https://faucetlist.org"
 echo ""
-read -rp "Press Enter to close..."
+read -rp "Press Enter to close..." || true
